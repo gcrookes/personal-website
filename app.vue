@@ -1,7 +1,7 @@
 <template>
   <div class="bg-slate-900 h-[100vh] w-[100vw] px-4">
     <q-toolbar class="text-white">
-      <q-toolbar-title class="font-bold"> GARNET CROOKES </q-toolbar-title>
+      <q-toolbar-title class="font-bold"> GARNET LEO CROOKES </q-toolbar-title>
       <q-tabs v-if="$q.screen.gt.xs" v-model="tab" shrink>
         <q-tab name="home" label="Home" />
         <q-tab name="about" label="About" />
