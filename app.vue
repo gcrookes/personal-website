@@ -1,29 +1,68 @@
 <template>
-  <div class="bg-slate-900 h-[100vh] w-[100vw] px-4">
-    <q-toolbar class="text-white">
-      <q-toolbar-title class="font-bold"> GARNET LEO CROOKES </q-toolbar-title>
-      <q-tabs v-if="$q.screen.gt.xs" v-model="tab" shrink>
-        <q-tab name="home" label="Home" />
-        <q-tab name="about" label="About" />
-        <q-tab name="projects" label="Projects" />
-        <q-tab name="contact" label="Contact" />
-      </q-tabs>
-      <q-btn v-else flat round dense icon="menu">
-          <q-menu auto-close class="bg-slate-800 text-white border border-white">
+  <div class="bg-slate-900 h-screen text-white">
+    <NuxtLayout>
+      <header>
+        <q-toolbar class="text-white">
+          <q-toolbar-title class="font-bold">
+            GARNET LEO CROOKES
+          </q-toolbar-title>
+          <q-tabs v-if="$q.screen.gt.xs" v-model="tab" shrink>
+            <q-tab name="home" >
+                <NuxtLink to="/" class="flex font-bold h-full w-full text-center items-center">Home</NuxtLink>
+            </q-tab>
+            <q-tab name="about" >
+                <NuxtLink to="/about" class="flex font-bold h-full w-full text-center items-center">About</NuxtLink>
+            </q-tab>
+            <q-tab name="projects" >
+                <NuxtLink to="/projects" class="flex font-bold h-full w-full text-center items-center">Projects</NuxtLink>
+            </q-tab>
+            <q-tab name="contact" >
+                <NuxtLink to="/contact" class="flex font-bold h-full w-full text-center items-center">Contact</NuxtLink>
+            </q-tab>
+          </q-tabs>
+          <q-btn v-else flat round dense icon="menu">
+            <q-menu
+              auto-close
+              class="bg-slate-800 text-white border border-white"
+            >
               <q-list>
-                  <q-item clickable @click="tab='home'" :class="[tab !== 'home' ? '' : 'underline']"><q-item-section>Home</q-item-section></q-item>
-                  <q-item clickable @click="tab='about'" :class="[tab !== 'about' ? '' : 'underline']"><q-item-section>About</q-item-section></q-item>
-                  <q-item clickable @click="tab='projects'" :class="[tab !== 'projects' ? '' : 'underline']"><q-item-section>Projects</q-item-section></q-item>
-                  <q-item clickable @click="tab='contact'" :class="[tab !== 'contact' ? '' : 'underline']"><q-item-section>Contact</q-item-section></q-item>
+                <q-item
+                  clickable
+                  :class="[route.path !== '/' ? '' : 'underline']"
+                  >
+                  <NuxtLink to="/" class="flex font-bold h-full w-full text-center items-center">Home</NuxtLink>
+                </q-item>
+                <q-item
+                  clickable
+                  :class="[route.path !== '/about' ? '' : 'underline']"
+                  >
+                    <NuxtLink to="/about" class="flex font-bold h-full w-full text-center items-center">About</NuxtLink>
+                </q-item>
+                <q-item
+                  clickable
+                  :class="[route.path !== '/projects' ? '' : 'underline']"
+                  >
+                    <NuxtLink to="/projects" class="flex font-bold h-full w-full text-center items-center">Projects</NuxtLink>
+                </q-item>
+                <q-item
+                  clickable
+                  :class="[route.path !== '/contact' ? '' : 'underline']"
+                  >
+                    <NuxtLink to="/contact" class="flex font-bold h-full w-full text-center items-center">Contact</NuxtLink>
+                </q-item>
               </q-list>
-          </q-menu>
-      </q-btn>
-    </q-toolbar>
-    <q-btn color="primary" label="primary" />
-    <q-btn color="secondary" label="secondary" />
+            </q-menu>
+          </q-btn>
+        </q-toolbar>
+      </header>
+      <div class="mx-6">
+        <NuxtPage />
+      </div>
+    </NuxtLayout>
   </div>
 </template>
 
 <script setup lang="ts">
 const tab = ref("home");
+const route = useRoute()
 </script>
