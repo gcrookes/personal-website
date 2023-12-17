@@ -7,18 +7,10 @@
             GARNET LEO CROOKES
           </q-toolbar-title>
           <q-tabs v-if="$q.screen.gt.xs" v-model="tab" shrink>
-            <q-tab name="home" >
-                <NuxtLink to="/" class="flex font-bold h-full w-full text-center items-center">Home</NuxtLink>
-            </q-tab>
-            <q-tab name="about" >
-                <NuxtLink to="/about" class="flex font-bold h-full w-full text-center items-center">About</NuxtLink>
-            </q-tab>
-            <q-tab name="projects" >
-                <NuxtLink to="/projects" class="flex font-bold h-full w-full text-center items-center">Projects</NuxtLink>
-            </q-tab>
-            <q-tab name="contact" >
-                <NuxtLink to="/contact" class="flex font-bold h-full w-full text-center items-center">Contact</NuxtLink>
-            </q-tab>
+            <q-route-tab class="rounded-lg" to="/" name="home" label="Home" />
+            <q-route-tab class="rounded-lg" to="/about" name="about" label="About" />
+            <q-route-tab class="rounded-lg" to="/projects" name="projects" label="Projects" />
+            <q-route-tab class="rounded-lg" to="/contact" name="contact" label="Contact" />
           </q-tabs>
           <q-btn v-else flat round dense icon="menu">
             <q-menu
