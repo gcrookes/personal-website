@@ -3,8 +3,8 @@
     <NuxtLayout>
       <header>
         <q-toolbar class="text-white">
-          <q-toolbar-title class="font-bold">
-            GARNET LEO CROOKES
+          <q-toolbar-title class="font-bold text-3xl">
+            GARNET CROOKES
           </q-toolbar-title>
           <q-tabs v-if="$q.screen.gt.xs" v-model="tab" shrink>
             <q-route-tab class="rounded-lg" to="/" name="home" label="Home" />
@@ -47,7 +47,7 @@
           </q-btn>
         </q-toolbar>
       </header>
-      <div class="mx-6">
+      <div :class="$q.screen.lt.md ? 'mx-6' : 'mx-24'">
         <NuxtPage />
       </div>
     </NuxtLayout>
