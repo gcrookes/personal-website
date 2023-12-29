@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen text-white">
     <NuxtLayout>
-      <header>
+      <header class="sticky top-0 left-0 w-full bg-slate-900" style="z-index: 3">
         <q-toolbar class="text-white">
           <q-toolbar-title class="font-bold text-3xl">
             GARNET CROOKES
