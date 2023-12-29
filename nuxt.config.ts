@@ -2,7 +2,10 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['@/assets/custom.scss', '~/assets/css/main.css'],
-  modules: ['nuxt-quasar-ui'],
+  modules: [
+      'nuxt-quasar-ui',
+      'nuxt-particles'
+  ],
   quasar: {
     sassVariables: '@/assets/quasar.variables.sass',
     plugins: [

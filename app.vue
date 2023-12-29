@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-slate-900 h-screen text-white">
+  <div class="h-screen text-white">
     <NuxtLayout>
       <header>
         <q-toolbar class="text-white">
@@ -48,6 +48,12 @@
         </q-toolbar>
       </header>
       <div :class="$q.screen.lt.md ? 'mx-6' : 'mx-24'">
+        <NuxtParticles
+            id="tsparticles" 
+            :options="options"
+            @load="onLoad"
+        >
+        </NuxtParticles>
         <NuxtPage />
       </div>
     </NuxtLayout>
@@ -57,4 +63,12 @@
 <script setup lang="ts">
 const tab = ref("home");
 const route = useRoute()
+
+import type { Container } from 'tsparticles-engine'
+const onLoad = (container: Container) => {
+  // Do something with the container
+  container.pause()
+  setTimeout(() => container.play(), 2000)
+}
+import options from '@/assets/particles.json'
 </script>

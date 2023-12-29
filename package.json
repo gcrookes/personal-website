@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.9",
+    "nuxt-particles": "^0.1.5",
     "quasar": "^2.14.1"
   }
 }
