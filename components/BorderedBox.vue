@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative-position mt-8 font-white border-primary border-2 rounded-md p-2 body-border"
+    class="relative-position mt-8 font-white border-primary border-2 rounded-md p-2 body-border max-w-3xl"
   >
     <div
       class="absolute text-2xl p-2 mx-2 rounded-2 top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-900"

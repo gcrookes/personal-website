@@ -47,7 +47,7 @@
           </q-btn>
         </q-toolbar>
       </header>
-      <div :class="$q.screen.lt.md ? 'mx-6' : 'mx-24'">
+            <div :class="['flex flex-row justify-center', $q.screen.lt.md ? 'mx-8' : '']">
         <NuxtParticles
             id="tsparticles" 
             :options="options"
