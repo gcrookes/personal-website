@@ -47,14 +47,14 @@
           </q-btn>
         </q-toolbar>
       </header>
-            <div :class="['flex flex-row justify-center', $q.screen.lt.md ? 'mx-8' : '']">
-        <NuxtParticles
-            id="tsparticles" 
-            :options="options"
-            @load="onLoad"
-        >
-        </NuxtParticles>
-        <NuxtPage />
+      <div :class="['flex flex-row justify-center pb-8', $q.screen.lt.md ? 'mx-8' : '']">
+          <NuxtParticles
+          id="tsparticles" 
+          :options="options"
+          @load="onLoad"
+          >
+          </NuxtParticles>
+          <NuxtPage />
       </div>
     </NuxtLayout>
   </div>
