@@ -3,11 +3,6 @@
     "enable": true,
     "zIndex": -1
   },
-  "background": {
-      "color": {
-          "value": "#111827"
-      }
-  },
   "particles": {
     "number": {
       "value": 100,
