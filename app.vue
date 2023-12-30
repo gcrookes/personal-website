@@ -68,7 +68,7 @@ import type { Container } from 'tsparticles-engine'
 const onLoad = (container: Container) => {
   // Do something with the container
   container.pause()
-  setTimeout(() => container.play(), 2000)
+  setTimeout(() => container.play(), 0)
 }
 import options from '@/assets/particles.json'
 </script>
