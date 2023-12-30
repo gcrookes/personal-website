@@ -19,7 +19,7 @@
 <style lang="sass">
 .animate-in
     transform: translateY(100%)
-    animation: slideInUp 5s forwards
+    animation: slideInUp 3s forwards
 
 .container
     overflow: hidden
