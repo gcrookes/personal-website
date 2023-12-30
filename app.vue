@@ -1,7 +1,7 @@
 <template>
-  <div class="h-screen text-white">
+  <div class="h-screen min-h-full text-white">
     <NuxtLayout>
-      <header class="sticky top-0 left-0 w-full bg-slate-900" style="z-index: 3">
+      <header class="sticky top-0 left-0 w-full bg-slate-900 px-2" style="z-index: 3">
         <q-toolbar class="text-white">
           <q-toolbar-title class="font-bold text-3xl">
             GARNET CROOKES
@@ -56,6 +56,11 @@
           </NuxtParticles>
           <NuxtPage />
       </div>
+      <footer class="fixed bottom-0 w-full h-8 flex items-center justify-center bg-slate-900 px-8 text-xs" style="z-index: 3">
+          <div>
+              Copyright &copy; 2024 Garnet Crookes. All rights reserved
+          </div>
+      </footer>
     </NuxtLayout>
   </div>
 </template>
