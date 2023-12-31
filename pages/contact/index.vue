@@ -29,6 +29,7 @@
             class="col-12"
             type="textarea"
             v-model="message.message"
+            :rules="[val => !!val || 'Please leave your message']"
             outlined
             dark
         />
@@ -54,7 +55,6 @@ const message = ref({email: '', name: '', message: ''})
 const headerMessage = 'Reach out for any inquires and I will get back to you promptly'
 
 const handleSubmit = async () => {
-
     const { error } = await useFetch('/api/saveMessage', {
         method: 'post',
         body: message.value
