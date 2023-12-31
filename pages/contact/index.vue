@@ -54,6 +54,7 @@ const message = ref({email: '', name: '', message: ''})
 const headerMessage = 'Reach out for any inquires and I will get back to you promptly'
 
 const handleSubmit = async () => {
+
     const { error } = await useFetch('/api/saveMessage', {
         method: 'post',
         body: message.value
