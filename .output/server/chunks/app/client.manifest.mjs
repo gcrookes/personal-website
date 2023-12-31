@@ -1,10 +1,63 @@
 const client_manifest = {
-  "__plugin-vue_export-helper.26f07da3.js": {
+  "BorderedBox.css": {
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true,
+    "file": "BorderedBox.0ac3faf8.css",
+    "src": "BorderedBox.css"
+  },
+  "_BorderedBox.vue.e69313b5.js": {
     "resourceType": "script",
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "_plugin-vue_export-helper.26f07da3.js",
+    "css": [
+      "BorderedBox.0ac3faf8.css"
+    ],
+    "file": "BorderedBox.vue.e69313b5.js",
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ]
+  },
+  "BorderedBox.0ac3faf8.css": {
+    "file": "BorderedBox.0ac3faf8.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "__plugin-vue_export-helper.c27b6911.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "_plugin-vue_export-helper.c27b6911.js"
+  },
+  "_browser.06aa05b2.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "browser.06aa05b2.js",
+    "isDynamicEntry": true
+  },
+  "_index.7c31f9e3.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.7c31f9e3.js",
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js",
+      "node_modules/tsparticles-basic/esm/index.js"
+    ],
+    "isDynamicEntry": true
+  },
+  "_vue.f36acd1f.0846e2eb.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "vue.f36acd1f.0846e2eb.js",
     "imports": [
       "node_modules/nuxt/dist/app/entry.js"
     ]
@@ -22,10 +75,11 @@ const client_manifest = {
     "prefetch": true,
     "preload": true,
     "css": [],
-    "file": "error-404.323ff857.js",
+    "file": "error-404.93ddadb8.js",
     "imports": [
       "node_modules/nuxt/dist/app/entry.js",
-      "__plugin-vue_export-helper.26f07da3.js"
+      "_vue.f36acd1f.0846e2eb.js",
+      "__plugin-vue_export-helper.c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "node_modules/@nuxt/ui-templates/dist/templates/error-404.vue"
@@ -49,9 +103,10 @@ const client_manifest = {
     "prefetch": true,
     "preload": true,
     "css": [],
-    "file": "error-500.eb729eac.js",
+    "file": "error-500.4b5950f6.js",
     "imports": [
-      "__plugin-vue_export-helper.26f07da3.js",
+      "_vue.f36acd1f.0846e2eb.js",
+      "__plugin-vue_export-helper.c27b6911.js",
       "node_modules/nuxt/dist/app/entry.js"
     ],
     "isDynamicEntry": true,
@@ -117,13 +172,122 @@ const client_manifest = {
     "prefetch": true,
     "preload": true,
     "dynamicImports": [
+      "_browser.06aa05b2.js",
+      "node_modules/tsparticles/esm/index.js",
+      "_index.7c31f9e3.js",
+      "node_modules/tsparticles-basic/esm/index.js",
       "node_modules/@nuxt/ui-templates/dist/templates/error-404.vue",
       "node_modules/@nuxt/ui-templates/dist/templates/error-500.vue"
     ],
-    "file": "entry.6b98aedf.js",
+    "file": "entry.36df233e.js",
     "isEntry": true,
     "src": "node_modules/nuxt/dist/app/entry.js",
     "_globalCSS": true
+  },
+  "node_modules/tsparticles-basic/esm/index.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.55c6691f.js",
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "node_modules/tsparticles-basic/esm/index.js"
+  },
+  "node_modules/tsparticles/esm/index.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.3431ac80.js",
+    "imports": [
+      "node_modules/nuxt/dist/app/entry.js",
+      "_index.7c31f9e3.js",
+      "node_modules/tsparticles-basic/esm/index.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "node_modules/tsparticles/esm/index.js"
+  },
+  "pages/about/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.7222e2a2.js",
+    "imports": [
+      "_BorderedBox.vue.e69313b5.js",
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "pages/about/index.vue"
+  },
+  "pages/contact/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.5d94b196.js",
+    "imports": [
+      "_BorderedBox.vue.e69313b5.js",
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "pages/contact/index.vue"
+  },
+  "pages/index.css": {
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true,
+    "file": "index.7e10d0a9.css",
+    "src": "pages/index.css"
+  },
+  "pages/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "css": [],
+    "file": "index.3b64ab12.js",
+    "imports": [
+      "__plugin-vue_export-helper.c27b6911.js",
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "pages/index.vue"
+  },
+  "index.7e10d0a9.css": {
+    "file": "index.7e10d0a9.css",
+    "resourceType": "style",
+    "prefetch": true,
+    "preload": true
+  },
+  "pages/index/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.a1e8f821.js",
+    "imports": [
+      "__plugin-vue_export-helper.c27b6911.js",
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "pages/index/index.vue"
+  },
+  "pages/projects/index.vue": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "file": "index.83c55e5b.js",
+    "imports": [
+      "__plugin-vue_export-helper.c27b6911.js",
+      "node_modules/nuxt/dist/app/entry.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "pages/projects/index.vue"
   }
 };
 

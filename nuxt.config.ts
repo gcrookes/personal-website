@@ -4,7 +4,8 @@ export default defineNuxtConfig({
   css: ['@/assets/custom.scss', '~/assets/css/main.css'],
   modules: [
       'nuxt-quasar-ui',
-      'nuxt-particles'
+      'nuxt-particles',
+      '@nuxtjs/supabase',
   ],
   quasar: {
     sassVariables: '@/assets/quasar.variables.sass',
@@ -32,6 +33,9 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {},
     },
+  },
+  supabase: {
+    redirect: false,
   },
 });
 

@@ -1,4 +1,4 @@
-import { b as useHead } from '../server.mjs';
+import { u as useHead } from '../server.mjs';
 import { useSSRContext, mergeProps } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate } from 'vue/server-renderer';
 import { _ as _export_sfc } from './_plugin-vue_export-helper-cc2b3d55.mjs';
@@ -11,6 +11,8 @@ import 'node:fs';
 import 'node:url';
 import 'unhead';
 import '@unhead/shared';
+import 'vue-router';
+import '@supabase/supabase-js';
 import 'quasar/lang/en-US.mjs';
 import 'quasar/icon-set/material-icons.mjs';
 
@@ -64,4 +66,4 @@ _sfc_main.setup = (props, ctx) => {
 const error500 = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-df79c84d"]]);
 
 export { error500 as default };
-//# sourceMappingURL=error-500-acbe754a.mjs.map
+//# sourceMappingURL=error-500-81a1124e.mjs.map

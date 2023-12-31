@@ -29,7 +29,6 @@
             class="col-12"
             type="textarea"
             v-model="message.message"
-            :rules="[val => !!val || 'Please leave a message']"
             outlined
             dark
         />
@@ -47,15 +46,22 @@
 </template>
 
 
-<script setup lang="ts"> 
+<script setup lang="ts">
+import { fail, success } from '~/utils/notify';
+
+ 
 const message = ref({email: '', name: '', message: ''})
 const headerMessage = 'Reach out for any inquires and I will get back to you promptly'
 
 const handleSubmit = async () => {
-    const data = await $fetch('/api/saveMessage', {
+    const { error } = await useFetch('/api/saveMessage', {
         method: 'post',
         body: message.value
     }) 
+    if (error && error.value)
+        fail(error.value.data.message)
+    else
+        success()
 }
 
 </script>

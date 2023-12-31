@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper.c27b6911.js";import{o as c,c as o}from"./entry.36df233e.js";const t={},s={class:"bg-slate-900 h-[100vh] w-[100vw] px-4"};function n(r,a){return c(),o("div",s," Index Page ")}const f=e(t,[["render",n]]);export{f as default};

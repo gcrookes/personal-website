@@ -1,10 +1,12 @@
-import { ref, inject, version, watchEffect, watch, getCurrentInstance, useSSRContext, hasInjectionContext, unref, markRaw, defineComponent, computed, h, Transition, withDirectives, provide, mergeProps, withCtx, createTextVNode, isRef, createVNode, openBlock, createBlock, createApp, effectScope, reactive, nextTick, onMounted, defineAsyncComponent, onErrorCaptured, onServerPrefetch, resolveDynamicComponent, toRef, isReadonly, isShallow, isReactive, toRaw } from 'vue';
-import { d as useRuntimeConfig$1, $ as $fetch, w as withQuery, l as hasProtocol, p as parseURL, m as isScriptProtocol, j as joinURL, h as createError$1, n as sanitizeStatusCode, o as createHooks, q as isEqual, r as stringifyParsedURL, t as stringifyQuery, v as parseQuery } from '../nitro/node-server.mjs';
+import { ref, inject, version, watchEffect, watch, getCurrentInstance, markRaw, defineComponent, computed, h, Transition, withDirectives, unref, provide, useSSRContext, shallowReactive, Suspense, nextTick, hasInjectionContext, resolveComponent, mergeProps, onMounted, onUnmounted, withCtx, createTextVNode, isRef, createVNode, openBlock, createBlock, createApp, effectScope, reactive, toRef, defineAsyncComponent, onErrorCaptured, onServerPrefetch, resolveDynamicComponent, shallowRef, isReadonly, isShallow, isReactive, toRaw } from 'vue';
+import { d as useRuntimeConfig$1, $ as $fetch, h as createError$1, l as defu, m as hasProtocol, j as joinURL, p as parseURL, n as parseQuery, o as createHooks, w as withTrailingSlash, q as withoutTrailingSlash, t as withQuery, v as isScriptProtocol, x as sanitizeStatusCode, y as parse, z as getRequestHeader, A as destr, B as isEqual, C as setCookie, D as getCookie, E as deleteCookie } from '../nitro/node-server.mjs';
 import { getActiveHead } from 'unhead';
 import { defineHeadPlugin, composableNames } from '@unhead/shared';
+import { useRoute as useRoute$1, RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
+import { createClient } from '@supabase/supabase-js';
 import lang$1 from 'quasar/lang/en-US.mjs';
 import iconSet$1 from 'quasar/icon-set/material-icons.mjs';
-import { ssrRenderAttrs, ssrRenderComponent, ssrRenderSuspense, ssrRenderVNode } from 'vue/server-renderer';
+import { ssrRenderAttrs, ssrRenderComponent, ssrRenderStyle, ssrRenderClass, ssrRenderSuspense, ssrRenderVNode } from 'vue/server-renderer';
 import 'node:http';
 import 'node:https';
 import 'fs';
@@ -1065,7 +1067,7 @@ const nuxtAppCtx = /* @__PURE__ */ getContext("nuxt-app", {
   asyncContext: false
 });
 const NuxtPluginIndicator = "__nuxt_plugin";
-function createNuxtApp(options) {
+function createNuxtApp(options2) {
   let hydratingCount = 0;
   const nuxtApp = {
     _scope: effectScope(),
@@ -1112,7 +1114,7 @@ function createNuxtApp(options) {
     _asyncDataPromises: {},
     _asyncData: {},
     _payloadRevivers: {},
-    ...options
+    ...options2
   };
   nuxtApp.hooks = createHooks();
   nuxtApp.hook = nuxtApp.hooks.hook;
@@ -1144,20 +1146,20 @@ function createNuxtApp(options) {
     }
     nuxtApp.ssrContext.payload = nuxtApp.payload;
     nuxtApp.ssrContext.config = {
-      public: options.ssrContext.runtimeConfig.public,
-      app: options.ssrContext.runtimeConfig.app
+      public: options2.ssrContext.runtimeConfig.public,
+      app: options2.ssrContext.runtimeConfig.app
     };
   }
-  const runtimeConfig = options.ssrContext.runtimeConfig;
+  const runtimeConfig = options2.ssrContext.runtimeConfig;
   nuxtApp.provide("config", runtimeConfig);
   return nuxtApp;
 }
-async function applyPlugin(nuxtApp, plugin) {
-  if (plugin.hooks) {
-    nuxtApp.hooks.addHooks(plugin.hooks);
+async function applyPlugin(nuxtApp, plugin2) {
+  if (plugin2.hooks) {
+    nuxtApp.hooks.addHooks(plugin2.hooks);
   }
-  if (typeof plugin === "function") {
-    const { provide: provide2 } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {};
+  if (typeof plugin2 === "function") {
+    const { provide: provide2 } = await nuxtApp.runWithContext(() => plugin2(nuxtApp)) || {};
     if (provide2 && typeof provide2 === "object") {
       for (const key in provide2) {
         nuxtApp.provide(key, provide2[key]);
@@ -1169,12 +1171,12 @@ async function applyPlugins(nuxtApp, plugins2) {
   var _a, _b;
   const parallels = [];
   const errors = [];
-  for (const plugin of plugins2) {
-    if (((_a = nuxtApp.ssrContext) == null ? void 0 : _a.islandContext) && ((_b = plugin.env) == null ? void 0 : _b.islands) === false) {
+  for (const plugin2 of plugins2) {
+    if (((_a = nuxtApp.ssrContext) == null ? void 0 : _a.islandContext) && ((_b = plugin2.env) == null ? void 0 : _b.islands) === false) {
       continue;
     }
-    const promise = applyPlugin(nuxtApp, plugin);
-    if (plugin.parallel) {
+    const promise = applyPlugin(nuxtApp, plugin2);
+    if (plugin2.parallel) {
       parallels.push(promise.catch((e) => errors.push(e)));
     } else {
       await promise;
@@ -1187,13 +1189,13 @@ async function applyPlugins(nuxtApp, plugins2) {
 }
 /*! @__NO_SIDE_EFFECTS__ */
 // @__NO_SIDE_EFFECTS__
-function defineNuxtPlugin(plugin) {
-  if (typeof plugin === "function") {
-    return plugin;
+function defineNuxtPlugin(plugin2) {
+  if (typeof plugin2 === "function") {
+    return plugin2;
   }
-  delete plugin.name;
-  return Object.assign(plugin.setup || (() => {
-  }), plugin, { [NuxtPluginIndicator]: true });
+  delete plugin2.name;
+  return Object.assign(plugin2.setup || (() => {
+  }), plugin2, { [NuxtPluginIndicator]: true });
 }
 function callWithNuxt(nuxt, setup, args) {
   const fn = () => args ? setup(...args) : setup();
@@ -1271,21 +1273,21 @@ function injectHead() {
     console.warn("Unhead is missing Vue context, falling back to shared context. This may have unexpected results.");
   return head || getActiveHead();
 }
-function useHead(input, options = {}) {
-  const head = options.head || injectHead();
+function useHead(input, options2 = {}) {
+  const head = options2.head || injectHead();
   if (head) {
     if (!head.ssr)
-      return clientUseHead(head, input, options);
-    return head.push(input, options);
+      return clientUseHead(head, input, options2);
+    return head.push(input, options2);
   }
 }
-function clientUseHead(head, input, options = {}) {
+function clientUseHead(head, input, options2 = {}) {
   const deactivated = ref(false);
   const resolvedInput = ref({});
   watchEffect(() => {
     resolvedInput.value = deactivated.value ? {} : resolveUnrefHeadInput(input);
   });
-  const entry2 = head.push(resolvedInput.value, options);
+  const entry2 = head.push(resolvedInput.value, options2);
   watch(resolvedInput, (e) => {
     entry2.patch(e);
   });
@@ -1310,115 +1312,6 @@ const unhead_KgADcZ0jPj = /* @__PURE__ */ defineNuxtPlugin({
     nuxtApp.vueApp.use(head);
   }
 });
-const PageRouteSymbol = Symbol("route");
-const useRouter = () => {
-  var _a;
-  return (_a = /* @__PURE__ */ useNuxtApp()) == null ? void 0 : _a.$router;
-};
-const useRoute = () => {
-  if (hasInjectionContext()) {
-    return inject(PageRouteSymbol, (/* @__PURE__ */ useNuxtApp())._route);
-  }
-  return (/* @__PURE__ */ useNuxtApp())._route;
-};
-/*! @__NO_SIDE_EFFECTS__ */
-// @__NO_SIDE_EFFECTS__
-function defineNuxtRouteMiddleware(middleware) {
-  return middleware;
-}
-const isProcessingMiddleware = () => {
-  try {
-    if ((/* @__PURE__ */ useNuxtApp())._processingMiddleware) {
-      return true;
-    }
-  } catch {
-    return true;
-  }
-  return false;
-};
-const navigateTo = (to, options) => {
-  if (!to) {
-    to = "/";
-  }
-  const toPath = typeof to === "string" ? to : withQuery(to.path || "/", to.query || {}) + (to.hash || "");
-  if (options == null ? void 0 : options.open) {
-    return Promise.resolve();
-  }
-  const isExternal = (options == null ? void 0 : options.external) || hasProtocol(toPath, { acceptRelative: true });
-  if (isExternal) {
-    if (!(options == null ? void 0 : options.external)) {
-      throw new Error("Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.");
-    }
-    const protocol = parseURL(toPath).protocol;
-    if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`);
-    }
-  }
-  const inMiddleware = isProcessingMiddleware();
-  const router = useRouter();
-  const nuxtApp = /* @__PURE__ */ useNuxtApp();
-  {
-    if (nuxtApp.ssrContext) {
-      const fullPath = typeof to === "string" || isExternal ? toPath : router.resolve(to).fullPath || "/";
-      const location2 = isExternal ? toPath : joinURL((/* @__PURE__ */ useRuntimeConfig()).app.baseURL, fullPath);
-      const redirect = async function(response) {
-        await nuxtApp.callHook("app:redirected");
-        const encodedLoc = location2.replace(/"/g, "%22");
-        nuxtApp.ssrContext._renderResponse = {
-          statusCode: sanitizeStatusCode((options == null ? void 0 : options.redirectCode) || 302, 302),
-          body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location: location2 }
-        };
-        return response;
-      };
-      if (!isExternal && inMiddleware) {
-        router.afterEach((final) => final.fullPath === fullPath ? redirect(false) : void 0);
-        return to;
-      }
-      return redirect(!inMiddleware ? void 0 : (
-        /* abort route navigation */
-        false
-      ));
-    }
-  }
-  if (isExternal) {
-    nuxtApp._scope.stop();
-    if (options == null ? void 0 : options.replace) {
-      location.replace(toPath);
-    } else {
-      location.href = toPath;
-    }
-    if (inMiddleware) {
-      if (!nuxtApp.isHydrating) {
-        return false;
-      }
-      return new Promise(() => {
-      });
-    }
-    return Promise.resolve();
-  }
-  return (options == null ? void 0 : options.replace) ? router.replace(to) : router.push(to);
-};
-const useError = () => toRef((/* @__PURE__ */ useNuxtApp()).payload, "error");
-const showError = (_err) => {
-  const err = createError(_err);
-  try {
-    const nuxtApp = /* @__PURE__ */ useNuxtApp();
-    const error = useError();
-    if (false)
-      ;
-    error.value = error.value || err;
-  } catch {
-    throw err;
-  }
-  return err;
-};
-const isNuxtError = (err) => !!(err && typeof err === "object" && "__nuxt_error" in err);
-const createError = (err) => {
-  const _err = createError$1(err);
-  _err.__nuxt_error = true;
-  return _err;
-};
 function createContext(opts = {}) {
   let currentInstance;
   let isSingleton = false;
@@ -1514,185 +1407,588 @@ const globalKey = "__unctx__";
 _globalThis[globalKey] || (_globalThis[globalKey] = createNamespace());
 const asyncHandlersKey = "__unctx_async_handlers__";
 const asyncHandlers = _globalThis[asyncHandlersKey] || (_globalThis[asyncHandlersKey] = /* @__PURE__ */ new Set());
+function executeAsync(function_) {
+  const restores = [];
+  for (const leaveHandler of asyncHandlers) {
+    const restore2 = leaveHandler();
+    if (restore2) {
+      restores.push(restore2);
+    }
+  }
+  const restore = () => {
+    for (const restore2 of restores) {
+      restore2();
+    }
+  };
+  let awaitable = function_();
+  if (awaitable && typeof awaitable === "object" && "catch" in awaitable) {
+    awaitable = awaitable.catch((error) => {
+      restore();
+      throw error;
+    });
+  }
+  return [awaitable, restore];
+}
+const LayoutMetaSymbol = Symbol("layout-meta");
+const PageRouteSymbol = Symbol("route");
+const useRouter = () => {
+  var _a;
+  return (_a = /* @__PURE__ */ useNuxtApp()) == null ? void 0 : _a.$router;
+};
+const useRoute = () => {
+  if (hasInjectionContext()) {
+    return inject(PageRouteSymbol, (/* @__PURE__ */ useNuxtApp())._route);
+  }
+  return (/* @__PURE__ */ useNuxtApp())._route;
+};
+/*! @__NO_SIDE_EFFECTS__ */
+// @__NO_SIDE_EFFECTS__
+function defineNuxtRouteMiddleware(middleware) {
+  return middleware;
+}
+const addRouteMiddleware = (name, middleware, options2 = {}) => {
+  const nuxtApp = /* @__PURE__ */ useNuxtApp();
+  const global2 = options2.global || typeof name !== "string";
+  const mw = typeof name !== "string" ? name : middleware;
+  if (!mw) {
+    console.warn("[nuxt] No route middleware passed to `addRouteMiddleware`.", name);
+    return;
+  }
+  if (global2) {
+    nuxtApp._middleware.global.push(mw);
+  } else {
+    nuxtApp._middleware.named[name] = mw;
+  }
+};
+const isProcessingMiddleware = () => {
+  try {
+    if ((/* @__PURE__ */ useNuxtApp())._processingMiddleware) {
+      return true;
+    }
+  } catch {
+    return true;
+  }
+  return false;
+};
+const navigateTo = (to, options2) => {
+  if (!to) {
+    to = "/";
+  }
+  const toPath = typeof to === "string" ? to : withQuery(to.path || "/", to.query || {}) + (to.hash || "");
+  if (options2 == null ? void 0 : options2.open) {
+    return Promise.resolve();
+  }
+  const isExternal = (options2 == null ? void 0 : options2.external) || hasProtocol(toPath, { acceptRelative: true });
+  if (isExternal) {
+    if (!(options2 == null ? void 0 : options2.external)) {
+      throw new Error("Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.");
+    }
+    const protocol = parseURL(toPath).protocol;
+    if (protocol && isScriptProtocol(protocol)) {
+      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`);
+    }
+  }
+  const inMiddleware = isProcessingMiddleware();
+  const router = useRouter();
+  const nuxtApp = /* @__PURE__ */ useNuxtApp();
+  {
+    if (nuxtApp.ssrContext) {
+      const fullPath = typeof to === "string" || isExternal ? toPath : router.resolve(to).fullPath || "/";
+      const location2 = isExternal ? toPath : joinURL((/* @__PURE__ */ useRuntimeConfig()).app.baseURL, fullPath);
+      const redirect = async function(response) {
+        await nuxtApp.callHook("app:redirected");
+        const encodedLoc = location2.replace(/"/g, "%22");
+        nuxtApp.ssrContext._renderResponse = {
+          statusCode: sanitizeStatusCode((options2 == null ? void 0 : options2.redirectCode) || 302, 302),
+          body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
+          headers: { location: location2 }
+        };
+        return response;
+      };
+      if (!isExternal && inMiddleware) {
+        router.afterEach((final) => final.fullPath === fullPath ? redirect(false) : void 0);
+        return to;
+      }
+      return redirect(!inMiddleware ? void 0 : (
+        /* abort route navigation */
+        false
+      ));
+    }
+  }
+  if (isExternal) {
+    nuxtApp._scope.stop();
+    if (options2 == null ? void 0 : options2.replace) {
+      location.replace(toPath);
+    } else {
+      location.href = toPath;
+    }
+    if (inMiddleware) {
+      if (!nuxtApp.isHydrating) {
+        return false;
+      }
+      return new Promise(() => {
+      });
+    }
+    return Promise.resolve();
+  }
+  return (options2 == null ? void 0 : options2.replace) ? router.replace(to) : router.push(to);
+};
+const useError = () => toRef((/* @__PURE__ */ useNuxtApp()).payload, "error");
+const showError = (_err) => {
+  const err = createError(_err);
+  try {
+    const nuxtApp = /* @__PURE__ */ useNuxtApp();
+    const error = useError();
+    if (false)
+      ;
+    error.value = error.value || err;
+  } catch {
+    throw err;
+  }
+  return err;
+};
+const isNuxtError = (err) => !!(err && typeof err === "object" && "__nuxt_error" in err);
+const createError = (err) => {
+  const _err = createError$1(err);
+  _err.__nuxt_error = true;
+  return _err;
+};
+const _routes = [
+  {
+    name: "about",
+    path: "/about",
+    meta: {},
+    alias: [],
+    redirect: void 0,
+    component: () => import('./_nuxt/index-8d67ea8e.mjs').then((m) => m.default || m)
+  },
+  {
+    name: "contact",
+    path: "/contact",
+    meta: {},
+    alias: [],
+    redirect: void 0,
+    component: () => import('./_nuxt/index-5091f993.mjs').then((m) => m.default || m)
+  },
+  {
+    path: "/",
+    children: [
+      {
+        name: "index",
+        path: "",
+        meta: {},
+        alias: [],
+        redirect: void 0,
+        component: () => import('./_nuxt/index-5aaa02c1.mjs').then((m) => m.default || m)
+      }
+    ],
+    name: void 0,
+    meta: {},
+    alias: [],
+    redirect: void 0,
+    component: () => import('./_nuxt/index-7cbaf27f.mjs').then((m) => m.default || m)
+  },
+  {
+    name: "projects",
+    path: "/projects",
+    meta: {},
+    alias: [],
+    redirect: void 0,
+    component: () => import('./_nuxt/index-b6de1de0.mjs').then((m) => m.default || m)
+  }
+];
+const _wrapIf = (component, props, slots) => {
+  props = props === true ? {} : props;
+  return { default: () => {
+    var _a;
+    return props ? h(component, props, slots) : (_a = slots.default) == null ? void 0 : _a.call(slots);
+  } };
+};
+function generateRouteKey$1(route) {
+  const source = (route == null ? void 0 : route.meta.key) ?? route.path.replace(/(:\w+)\([^)]+\)/g, "$1").replace(/(:\w+)[?+*]/g, "$1").replace(/:\w+/g, (r) => {
+    var _a;
+    return ((_a = route.params[r.slice(1)]) == null ? void 0 : _a.toString()) || "";
+  });
+  return typeof source === "function" ? source(route) : source;
+}
+function isChangingPage(to, from) {
+  if (to === from) {
+    return false;
+  }
+  if (generateRouteKey$1(to) !== generateRouteKey$1(from)) {
+    return true;
+  }
+  const areComponentsSame = to.matched.every(
+    (comp, index) => {
+      var _a, _b;
+      return comp.components && comp.components.default === ((_b = (_a = from.matched[index]) == null ? void 0 : _a.components) == null ? void 0 : _b.default);
+    }
+  );
+  if (areComponentsSame) {
+    return false;
+  }
+  return true;
+}
+const appLayoutTransition = false;
+const appPageTransition = false;
+const appKeepalive = false;
+const nuxtLinkDefaults = { "componentName": "NuxtLink" };
+const routerOptions0 = {
+  scrollBehavior(to, from, savedPosition) {
+    var _a;
+    const nuxtApp = /* @__PURE__ */ useNuxtApp();
+    const behavior = ((_a = useRouter().options) == null ? void 0 : _a.scrollBehaviorType) ?? "auto";
+    let position2 = savedPosition || void 0;
+    const routeAllowsScrollToTop = typeof to.meta.scrollToTop === "function" ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop;
+    if (!position2 && from && to && routeAllowsScrollToTop !== false && isChangingPage(to, from)) {
+      position2 = { left: 0, top: 0 };
+    }
+    if (to.path === from.path) {
+      if (from.hash && !to.hash) {
+        return { left: 0, top: 0 };
+      }
+      if (to.hash) {
+        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior };
+      }
+    }
+    const hasTransition = (route) => !!(route.meta.pageTransition ?? appPageTransition);
+    const hookToWait = hasTransition(from) && hasTransition(to) ? "page:transition:finish" : "page:finish";
+    return new Promise((resolve) => {
+      nuxtApp.hooks.hookOnce(hookToWait, async () => {
+        await nextTick();
+        if (to.hash) {
+          position2 = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior };
+        }
+        resolve(position2);
+      });
+    });
+  }
+};
+function _getHashElementScrollMarginTop(selector) {
+  try {
+    const elem = document.querySelector(selector);
+    if (elem) {
+      return parseFloat(getComputedStyle(elem).scrollMarginTop);
+    }
+  } catch {
+  }
+  return 0;
+}
+const configRouterOptions = {
+  hashMode: false,
+  scrollBehaviorType: "auto"
+};
+const routerOptions = {
+  ...configRouterOptions,
+  ...routerOptions0
+};
+const validate = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
+  var _a;
+  let __temp, __restore;
+  if (!((_a = to.meta) == null ? void 0 : _a.validate)) {
+    return;
+  }
+  useRouter();
+  const result = ([__temp, __restore] = executeAsync(() => Promise.resolve(to.meta.validate(to))), __temp = await __temp, __restore(), __temp);
+  if (result === true) {
+    return;
+  }
+  {
+    return result;
+  }
+});
 const manifest_45route_45rule = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
   {
     return;
   }
 });
 const globalMiddleware = [
+  validate,
   manifest_45route_45rule
 ];
-function getRouteFromPath(fullPath) {
-  if (typeof fullPath === "object") {
-    fullPath = stringifyParsedURL({
-      pathname: fullPath.path || "",
-      search: stringifyQuery(fullPath.query || {}),
-      hash: fullPath.hash || ""
-    });
-  }
-  const url = parseURL(fullPath.toString());
-  return {
-    path: url.pathname,
-    fullPath,
-    query: parseQuery(url.search),
-    hash: url.hash,
-    // stub properties for compat with vue-router
-    params: {},
-    name: void 0,
-    matched: [],
-    redirectedFrom: void 0,
-    meta: {},
-    href: fullPath
-  };
-}
-const router_CaKIoANnI2 = /* @__PURE__ */ defineNuxtPlugin({
+const namedMiddleware = {};
+const plugin = /* @__PURE__ */ defineNuxtPlugin({
   name: "nuxt:router",
   enforce: "pre",
-  setup(nuxtApp) {
-    const initialURL = nuxtApp.ssrContext.url;
-    const routes = [];
-    const hooks = {
-      "navigate:before": [],
-      "resolve:before": [],
-      "navigate:after": [],
-      error: []
-    };
-    const registerHook = (hook, guard) => {
-      hooks[hook].push(guard);
-      return () => hooks[hook].splice(hooks[hook].indexOf(guard), 1);
-    };
-    (/* @__PURE__ */ useRuntimeConfig()).app.baseURL;
-    const route = reactive(getRouteFromPath(initialURL));
-    async function handleNavigation(url, replace) {
-      try {
-        const to = getRouteFromPath(url);
-        for (const middleware of hooks["navigate:before"]) {
-          const result = await middleware(to, route);
-          if (result === false || result instanceof Error) {
-            return;
-          }
-          if (typeof result === "string" && result.length) {
-            return handleNavigation(result, true);
-          }
-        }
-        for (const handler of hooks["resolve:before"]) {
-          await handler(to, route);
-        }
-        Object.assign(route, to);
-        if (false)
-          ;
-        for (const middleware of hooks["navigate:after"]) {
-          await middleware(to, route);
-        }
-      } catch (err) {
-        for (const handler of hooks.error) {
-          await handler(err);
-        }
-      }
+  async setup(nuxtApp) {
+    var _a, _b;
+    let __temp, __restore;
+    let routerBase = (/* @__PURE__ */ useRuntimeConfig()).app.baseURL;
+    if (routerOptions.hashMode && !routerBase.includes("#")) {
+      routerBase += "#";
     }
-    const router = {
-      currentRoute: route,
-      isReady: () => Promise.resolve(),
-      // These options provide a similar API to vue-router but have no effect
-      options: {},
-      install: () => Promise.resolve(),
-      // Navigation
-      push: (url) => handleNavigation(url),
-      replace: (url) => handleNavigation(url),
-      back: () => window.history.go(-1),
-      go: (delta) => window.history.go(delta),
-      forward: () => window.history.go(1),
-      // Guards
-      beforeResolve: (guard) => registerHook("resolve:before", guard),
-      beforeEach: (guard) => registerHook("navigate:before", guard),
-      afterEach: (guard) => registerHook("navigate:after", guard),
-      onError: (handler) => registerHook("error", handler),
-      // Routes
-      resolve: getRouteFromPath,
-      addRoute: (parentName, route2) => {
-        routes.push(route2);
-      },
-      getRoutes: () => routes,
-      hasRoute: (name) => routes.some((route2) => route2.name === name),
-      removeRoute: (name) => {
-        const index = routes.findIndex((route2) => route2.name === name);
-        if (index !== -1) {
-          routes.splice(index, 1);
+    const history = ((_a = routerOptions.history) == null ? void 0 : _a.call(routerOptions, routerBase)) ?? createMemoryHistory(routerBase);
+    const routes = ((_b = routerOptions.routes) == null ? void 0 : _b.call(routerOptions, _routes)) ?? _routes;
+    let startPosition;
+    const initialURL = nuxtApp.ssrContext.url;
+    const router = createRouter({
+      ...routerOptions,
+      scrollBehavior: (to, from, savedPosition) => {
+        var _a2;
+        if (from === START_LOCATION) {
+          startPosition = savedPosition;
+          return;
         }
-      }
-    };
-    nuxtApp.vueApp.component("RouterLink", {
-      functional: true,
-      props: {
-        to: String,
-        custom: Boolean,
-        replace: Boolean,
-        // Not implemented
-        activeClass: String,
-        exactActiveClass: String,
-        ariaCurrentValue: String
+        router.options.scrollBehavior = routerOptions.scrollBehavior;
+        return (_a2 = routerOptions.scrollBehavior) == null ? void 0 : _a2.call(routerOptions, to, START_LOCATION, startPosition || savedPosition);
       },
-      setup: (props, { slots }) => {
-        const navigate = () => handleNavigation(props.to, props.replace);
-        return () => {
-          var _a;
-          const route2 = router.resolve(props.to);
-          return props.custom ? (_a = slots.default) == null ? void 0 : _a.call(slots, { href: props.to, navigate, route: route2 }) : h("a", { href: props.to, onClick: (e) => {
-            e.preventDefault();
-            return navigate();
-          } }, slots);
-        };
+      history,
+      routes
+    });
+    nuxtApp.vueApp.use(router);
+    const previousRoute = shallowRef(router.currentRoute.value);
+    router.afterEach((_to, from) => {
+      previousRoute.value = from;
+    });
+    Object.defineProperty(nuxtApp.vueApp.config.globalProperties, "previousRoute", {
+      get: () => previousRoute.value
+    });
+    const _route = shallowRef(router.resolve(initialURL));
+    const syncCurrentRoute = () => {
+      _route.value = router.currentRoute.value;
+    };
+    nuxtApp.hook("page:finish", syncCurrentRoute);
+    router.afterEach((to, from) => {
+      var _a2, _b2, _c, _d;
+      if (((_b2 = (_a2 = to.matched[0]) == null ? void 0 : _a2.components) == null ? void 0 : _b2.default) === ((_d = (_c = from.matched[0]) == null ? void 0 : _c.components) == null ? void 0 : _d.default)) {
+        syncCurrentRoute();
       }
     });
-    nuxtApp._route = route;
+    const route = {};
+    for (const key in _route.value) {
+      Object.defineProperty(route, key, {
+        get: () => _route.value[key]
+      });
+    }
+    nuxtApp._route = shallowReactive(route);
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
       named: {}
     };
+    useError();
+    try {
+      if (true) {
+        ;
+        [__temp, __restore] = executeAsync(() => router.push(initialURL)), await __temp, __restore();
+        ;
+      }
+      ;
+      [__temp, __restore] = executeAsync(() => router.isReady()), await __temp, __restore();
+      ;
+    } catch (error2) {
+      [__temp, __restore] = executeAsync(() => nuxtApp.runWithContext(() => showError(error2))), await __temp, __restore();
+    }
     const initialLayout = nuxtApp.payload.state._layout;
-    nuxtApp.hooks.hookOnce("app:created", async () => {
-      router.beforeEach(async (to, from) => {
-        var _a;
-        to.meta = reactive(to.meta || {});
-        if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
-          to.meta.layout = initialLayout;
-        }
-        nuxtApp._processingMiddleware = true;
-        if (!((_a = nuxtApp.ssrContext) == null ? void 0 : _a.islandContext)) {
-          const middlewareEntries = /* @__PURE__ */ new Set([...globalMiddleware, ...nuxtApp._middleware.global]);
-          for (const middleware of middlewareEntries) {
-            const result = await nuxtApp.runWithContext(() => middleware(to, from));
-            {
-              if (result === false || result instanceof Error) {
-                const error = result || createError$1({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`
-                });
-                delete nuxtApp._processingMiddleware;
-                return nuxtApp.runWithContext(() => showError(error));
-              }
+    router.beforeEach(async (to, from) => {
+      var _a2, _b2;
+      to.meta = reactive(to.meta);
+      if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
+        to.meta.layout = initialLayout;
+      }
+      nuxtApp._processingMiddleware = true;
+      if (!((_a2 = nuxtApp.ssrContext) == null ? void 0 : _a2.islandContext)) {
+        const middlewareEntries = /* @__PURE__ */ new Set([...globalMiddleware, ...nuxtApp._middleware.global]);
+        for (const component of to.matched) {
+          const componentMiddleware = component.meta.middleware;
+          if (!componentMiddleware) {
+            continue;
+          }
+          if (Array.isArray(componentMiddleware)) {
+            for (const entry2 of componentMiddleware) {
+              middlewareEntries.add(entry2);
             }
-            if (result === true) {
-              continue;
-            }
-            if (result || result === false) {
-              return result;
-            }
+          } else {
+            middlewareEntries.add(componentMiddleware);
           }
         }
-      });
-      router.afterEach(() => {
-        delete nuxtApp._processingMiddleware;
-      });
-      await router.replace(initialURL);
-      if (!isEqual(route.fullPath, initialURL)) {
-        await nuxtApp.runWithContext(() => navigateTo(route.fullPath));
+        for (const entry2 of middlewareEntries) {
+          const middleware = typeof entry2 === "string" ? nuxtApp._middleware.named[entry2] || await ((_b2 = namedMiddleware[entry2]) == null ? void 0 : _b2.call(namedMiddleware).then((r) => r.default || r)) : entry2;
+          if (!middleware) {
+            throw new Error(`Unknown route middleware: '${entry2}'.`);
+          }
+          const result = await nuxtApp.runWithContext(() => middleware(to, from));
+          {
+            if (result === false || result instanceof Error) {
+              const error2 = result || createError$1({
+                statusCode: 404,
+                statusMessage: `Page Not Found: ${initialURL}`
+              });
+              await nuxtApp.runWithContext(() => showError(error2));
+              return false;
+            }
+          }
+          if (result === true) {
+            continue;
+          }
+          if (result || result === false) {
+            return result;
+          }
+        }
       }
     });
+    router.onError(() => {
+      delete nuxtApp._processingMiddleware;
+    });
+    router.afterEach(async (to, _from, failure) => {
+      var _a2;
+      delete nuxtApp._processingMiddleware;
+      if ((failure == null ? void 0 : failure.type) === 4) {
+        return;
+      }
+      if (to.matched.length === 0 && !((_a2 = nuxtApp.ssrContext) == null ? void 0 : _a2.islandContext)) {
+        await nuxtApp.runWithContext(() => showError(createError$1({
+          statusCode: 404,
+          fatal: false,
+          statusMessage: `Page not found: ${to.fullPath}`
+        })));
+      } else if (to.redirectedFrom && to.fullPath !== initialURL) {
+        await nuxtApp.runWithContext(() => navigateTo(to.fullPath || "/"));
+      }
+    });
+    nuxtApp.hooks.hookOnce("app:created", async () => {
+      try {
+        await router.replace({
+          ...router.resolve(initialURL),
+          name: void 0,
+          // #4920, #4982
+          force: true
+        });
+        router.options.scrollBehavior = routerOptions.scrollBehavior;
+      } catch (error2) {
+        await nuxtApp.runWithContext(() => showError(error2));
+      }
+    });
+    return { provide: { router } };
+  }
+});
+function useRequestEvent(nuxtApp = /* @__PURE__ */ useNuxtApp()) {
+  var _a;
+  return (_a = nuxtApp.ssrContext) == null ? void 0 : _a.event;
+}
+const CookieDefaults = {
+  path: "/",
+  watch: true,
+  decode: (val) => destr(decodeURIComponent(val)),
+  encode: (val) => encodeURIComponent(typeof val === "string" ? val : JSON.stringify(val))
+};
+function useCookie(name, _opts) {
+  var _a;
+  const opts = { ...CookieDefaults, ..._opts };
+  const cookies = readRawCookies(opts) || {};
+  let delay;
+  if (opts.maxAge !== void 0) {
+    delay = opts.maxAge * 1e3;
+  } else if (opts.expires) {
+    delay = opts.expires.getTime() - Date.now();
+  }
+  const hasExpired = delay !== void 0 && delay <= 0;
+  const cookieValue = hasExpired ? void 0 : cookies[name] ?? ((_a = opts.default) == null ? void 0 : _a.call(opts));
+  const cookie = ref(cookieValue);
+  {
+    const nuxtApp = /* @__PURE__ */ useNuxtApp();
+    const writeFinalCookieValue = () => {
+      if (!isEqual(cookie.value, cookies[name])) {
+        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts);
+      }
+    };
+    const unhook = nuxtApp.hooks.hookOnce("app:rendered", writeFinalCookieValue);
+    nuxtApp.hooks.hookOnce("app:error", () => {
+      unhook();
+      return writeFinalCookieValue();
+    });
+  }
+  return cookie;
+}
+function readRawCookies(opts = {}) {
+  {
+    return parse(getRequestHeader(useRequestEvent(), "cookie") || "", opts);
+  }
+}
+function writeServerCookie(event, name, value, opts = {}) {
+  if (event) {
+    if (value !== null && value !== void 0) {
+      return setCookie(event, name, value, opts);
+    }
+    if (getCookie(event, name) !== void 0) {
+      return deleteCookie(event, name, opts);
+    }
+  }
+}
+const useStateKeyPrefix = "$s";
+function useState(...args) {
+  const autoKey = typeof args[args.length - 1] === "string" ? args.pop() : void 0;
+  if (typeof args[0] !== "string") {
+    args.unshift(autoKey);
+  }
+  const [_key, init] = args;
+  if (!_key || typeof _key !== "string") {
+    throw new TypeError("[nuxt] [useState] key must be a string: " + _key);
+  }
+  if (init !== void 0 && typeof init !== "function") {
+    throw new Error("[nuxt] [useState] init must be a function: " + init);
+  }
+  const key = useStateKeyPrefix + _key;
+  const nuxt = /* @__PURE__ */ useNuxtApp();
+  const state = toRef(nuxt.payload.state, key);
+  if (state.value === void 0 && init) {
+    const initialValue = init();
+    if (isRef(initialValue)) {
+      nuxt.payload.state[key] = initialValue;
+      return initialValue;
+    }
+    state.value = initialValue;
+  }
+  return state;
+}
+const useSupabaseClient = () => {
+  var _a;
+  return (_a = (/* @__PURE__ */ useNuxtApp()).$supabase) == null ? void 0 : _a.client;
+};
+const useSupabaseUser = () => {
+  const supabase = useSupabaseClient();
+  const user = useState("supabase_user", () => null);
+  supabase == null ? void 0 : supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      if (JSON.stringify(user.value) !== JSON.stringify(session.user)) {
+        user.value = session.user;
+      }
+    } else {
+      user.value = null;
+    }
+  });
+  return user;
+};
+const supabase_server_6VOknHCOlQ = /* @__PURE__ */ defineNuxtPlugin({
+  name: "supabase",
+  enforce: "pre",
+  async setup() {
+    let __temp, __restore;
+    const { url, key, cookieName, clientOptions } = (/* @__PURE__ */ useRuntimeConfig()).public.supabase;
+    const accessToken = useCookie(`${cookieName}-access-token`).value;
+    const refreshToken = useCookie(`${cookieName}-refresh-token`).value;
+    const options2 = defu({
+      auth: {
+        flowType: clientOptions.auth.flowType,
+        detectSessionInUrl: false,
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    }, clientOptions);
+    const supabaseClient = createClient(url, key, options2);
+    if (accessToken && refreshToken) {
+      const { data } = ([__temp, __restore] = executeAsync(() => supabaseClient.auth.setSession({
+        refresh_token: refreshToken,
+        access_token: accessToken
+      })), __temp = await __temp, __restore(), __temp);
+      if (data == null ? void 0 : data.user) {
+        useSupabaseUser().value = data.user;
+      }
+    }
     return {
       provide: {
-        route,
-        router
+        supabase: {
+          client: supabaseClient
+        }
       }
     };
   }
@@ -1722,6 +2018,226 @@ const revive_payload_server_eJ33V7gbc6 = /* @__PURE__ */ defineNuxtPlugin({
 const components_plugin_KR1HBZs4kY = /* @__PURE__ */ defineNuxtPlugin({
   name: "nuxt:global-components"
 });
+const auth_redirect_hxxEaFfrIx = /* @__PURE__ */ defineNuxtPlugin({
+  name: "auth-redirect",
+  setup() {
+    addRouteMiddleware(
+      "global-auth",
+      /* @__PURE__ */ defineNuxtRouteMiddleware((to) => {
+        var _a;
+        const config = (/* @__PURE__ */ useRuntimeConfig()).public.supabase;
+        const { login, callback, exclude } = config.redirectOptions;
+        const isExcluded = (_a = [...exclude, login, callback]) == null ? void 0 : _a.some((path) => {
+          const regex = new RegExp(`^${path.replace(/\*/g, ".*")}$`);
+          return regex.test(to.path);
+        });
+        if (isExcluded) {
+          return;
+        }
+        const user = useSupabaseUser();
+        if (!user.value) {
+          return navigateTo(login);
+        }
+      }),
+      { global: true }
+    );
+  }
+});
+const firstNonUndefined = (...args) => args.find((arg) => arg !== void 0);
+const DEFAULT_EXTERNAL_REL_ATTRIBUTE = "noopener noreferrer";
+/*! @__NO_SIDE_EFFECTS__ */
+// @__NO_SIDE_EFFECTS__
+function defineNuxtLink(options2) {
+  const componentName = options2.componentName || "NuxtLink";
+  const resolveTrailingSlashBehavior = (to, resolve) => {
+    if (!to || options2.trailingSlash !== "append" && options2.trailingSlash !== "remove") {
+      return to;
+    }
+    const normalizeTrailingSlash = options2.trailingSlash === "append" ? withTrailingSlash : withoutTrailingSlash;
+    if (typeof to === "string") {
+      return normalizeTrailingSlash(to, true);
+    }
+    const path = "path" in to ? to.path : resolve(to).path;
+    return {
+      ...to,
+      name: void 0,
+      // named routes would otherwise always override trailing slash behavior
+      path: normalizeTrailingSlash(path, true)
+    };
+  };
+  return defineComponent({
+    name: componentName,
+    props: {
+      // Routing
+      to: {
+        type: [String, Object],
+        default: void 0,
+        required: false
+      },
+      href: {
+        type: [String, Object],
+        default: void 0,
+        required: false
+      },
+      // Attributes
+      target: {
+        type: String,
+        default: void 0,
+        required: false
+      },
+      rel: {
+        type: String,
+        default: void 0,
+        required: false
+      },
+      noRel: {
+        type: Boolean,
+        default: void 0,
+        required: false
+      },
+      // Prefetching
+      prefetch: {
+        type: Boolean,
+        default: void 0,
+        required: false
+      },
+      noPrefetch: {
+        type: Boolean,
+        default: void 0,
+        required: false
+      },
+      // Styling
+      activeClass: {
+        type: String,
+        default: void 0,
+        required: false
+      },
+      exactActiveClass: {
+        type: String,
+        default: void 0,
+        required: false
+      },
+      prefetchedClass: {
+        type: String,
+        default: void 0,
+        required: false
+      },
+      // Vue Router's `<RouterLink>` additional props
+      replace: {
+        type: Boolean,
+        default: void 0,
+        required: false
+      },
+      ariaCurrentValue: {
+        type: String,
+        default: void 0,
+        required: false
+      },
+      // Edge cases handling
+      external: {
+        type: Boolean,
+        default: void 0,
+        required: false
+      },
+      // Slot API
+      custom: {
+        type: Boolean,
+        default: void 0,
+        required: false
+      }
+    },
+    setup(props, { slots }) {
+      const router = useRouter();
+      const config = /* @__PURE__ */ useRuntimeConfig();
+      const to = computed(() => {
+        const path = props.to || props.href || "";
+        return resolveTrailingSlashBehavior(path, router.resolve);
+      });
+      const isProtocolURL = computed(() => typeof to.value === "string" && hasProtocol(to.value, { acceptRelative: true }));
+      const isExternal = computed(() => {
+        if (props.external) {
+          return true;
+        }
+        if (props.target && props.target !== "_self") {
+          return true;
+        }
+        if (typeof to.value === "object") {
+          return false;
+        }
+        return to.value === "" || isProtocolURL.value;
+      });
+      const prefetched = ref(false);
+      const el = void 0;
+      const elRef = void 0;
+      return () => {
+        var _a, _b;
+        if (!isExternal.value) {
+          const routerLinkProps = {
+            ref: elRef,
+            to: to.value,
+            activeClass: props.activeClass || options2.activeClass,
+            exactActiveClass: props.exactActiveClass || options2.exactActiveClass,
+            replace: props.replace,
+            ariaCurrentValue: props.ariaCurrentValue,
+            custom: props.custom
+          };
+          if (!props.custom) {
+            if (prefetched.value) {
+              routerLinkProps.class = props.prefetchedClass || options2.prefetchedClass;
+            }
+            routerLinkProps.rel = props.rel;
+          }
+          return h(
+            resolveComponent("RouterLink"),
+            routerLinkProps,
+            slots.default
+          );
+        }
+        const href = typeof to.value === "object" ? ((_a = router.resolve(to.value)) == null ? void 0 : _a.href) ?? null : to.value && !props.external && !isProtocolURL.value ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) : to.value || null;
+        const target = props.target || null;
+        const rel = props.noRel ? null : firstNonUndefined(props.rel, options2.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : "") || null;
+        const navigate = () => navigateTo(href, { replace: props.replace });
+        if (props.custom) {
+          if (!slots.default) {
+            return null;
+          }
+          return slots.default({
+            href,
+            navigate,
+            get route() {
+              if (!href) {
+                return void 0;
+              }
+              const url = parseURL(href);
+              return {
+                path: url.pathname,
+                fullPath: url.pathname,
+                get query() {
+                  return parseQuery(url.search);
+                },
+                hash: url.hash,
+                // stub properties for compat with vue-router
+                params: {},
+                name: void 0,
+                matched: [],
+                redirectedFrom: void 0,
+                meta: {},
+                href
+              };
+            },
+            rel,
+            target,
+            isExternal: isExternal.value,
+            isActive: false,
+            isExactActive: false
+          });
+        }
+        return h("a", { ref: el, href, rel, target }, (_b = slots.default) == null ? void 0 : _b.call(slots));
+      };
+    }
+  });
+}
+const __nuxt_component_0$1 = /* @__PURE__ */ defineNuxtLink(nuxtLinkDefaults);
 const quasar_plugin_server_Gl42wdGzSR = /* @__PURE__ */ defineNuxtPlugin((nuxt) => {
   const ssrContext = {
     req: nuxt.ssrContext.event.req,
@@ -2476,7 +2992,7 @@ function useBtn(props) {
 }
 const { passiveCapture } = listenOpts;
 let touchTarget = null, keyboardTarget = null, mouseTarget = null;
-const __nuxt_component_4 = createComponent({
+const __nuxt_component_3$1 = createComponent({
   name: "QBtn",
   props: {
     ...useBtnProps,
@@ -2757,13 +3273,105 @@ const provide_4gUmUdUSZU = /* @__PURE__ */ defineNuxtPlugin(() => {
 });
 const plugins = [
   unhead_KgADcZ0jPj,
-  router_CaKIoANnI2,
+  plugin,
+  supabase_server_6VOknHCOlQ,
   revive_payload_server_eJ33V7gbc6,
   components_plugin_KR1HBZs4kY,
+  auth_redirect_hxxEaFfrIx,
   quasar_plugin_server_Gl42wdGzSR,
   provide_4gUmUdUSZU
 ];
-const __nuxt_component_0 = createComponent({
+const layouts = {};
+const LayoutLoader = defineComponent({
+  name: "LayoutLoader",
+  inheritAttrs: false,
+  props: {
+    name: String,
+    layoutProps: Object
+  },
+  async setup(props, context) {
+    const LayoutComponent = await layouts[props.name]().then((r) => r.default || r);
+    return () => h(LayoutComponent, props.layoutProps, context.slots);
+  }
+});
+const __nuxt_component_0 = defineComponent({
+  name: "NuxtLayout",
+  inheritAttrs: false,
+  props: {
+    name: {
+      type: [String, Boolean, Object],
+      default: null
+    }
+  },
+  setup(props, context) {
+    const nuxtApp = /* @__PURE__ */ useNuxtApp();
+    const injectedRoute = inject(PageRouteSymbol);
+    const route = injectedRoute === useRoute() ? useRoute$1() : injectedRoute;
+    const layout = computed(() => unref(props.name) ?? route.meta.layout ?? "default");
+    const layoutRef = ref();
+    context.expose({ layoutRef });
+    const done = nuxtApp.deferHydration();
+    return () => {
+      const hasLayout = layout.value && layout.value in layouts;
+      const transitionProps = route.meta.layoutTransition ?? appLayoutTransition;
+      return _wrapIf(Transition, hasLayout && transitionProps, {
+        default: () => h(Suspense, { suspensible: true, onResolve: () => {
+          nextTick(done);
+        } }, {
+          default: () => h(
+            LayoutProvider,
+            {
+              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              key: layout.value || void 0,
+              name: layout.value,
+              shouldProvide: !props.name,
+              hasTransition: !!transitionProps
+            },
+            context.slots
+          )
+        })
+      }).default();
+    };
+  }
+});
+const LayoutProvider = defineComponent({
+  name: "NuxtLayoutProvider",
+  inheritAttrs: false,
+  props: {
+    name: {
+      type: [String, Boolean]
+    },
+    layoutProps: {
+      type: Object
+    },
+    hasTransition: {
+      type: Boolean
+    },
+    shouldProvide: {
+      type: Boolean
+    }
+  },
+  setup(props, context) {
+    const name = props.name;
+    if (props.shouldProvide) {
+      provide(LayoutMetaSymbol, {
+        isCurrent: (route) => name === (route.meta.layout ?? "default")
+      });
+    }
+    return () => {
+      var _a, _b;
+      if (!name || typeof name === "string" && !(name in layouts)) {
+        return (_b = (_a = context.slots).default) == null ? void 0 : _b.call(_a);
+      }
+      return h(
+        LayoutLoader,
+        { key: name, layoutProps: props.layoutProps, name },
+        context.slots
+      );
+    };
+  }
+});
+const __nuxt_component_1 = createComponent({
   name: "QToolbar",
   props: {
     inset: Boolean
@@ -2775,7 +3383,7 @@ const __nuxt_component_0 = createComponent({
     return () => h("div", { class: classes.value, role: "toolbar" }, hSlot(slots.default));
   }
 });
-const __nuxt_component_1 = createComponent({
+const __nuxt_component_2 = createComponent({
   name: "QToolbarTitle",
   props: {
     shrink: Boolean
@@ -2950,6 +3558,7 @@ function useTimeout() {
     }
   };
 }
+const formKey = "_q_fo_";
 const tabsKey = "_q_tabs_";
 const emptyRenderFn = () => {
 };
@@ -2958,7 +3567,7 @@ function getIndicatorClass(color, top, vertical) {
   return `absolute-${top === true ? pos[0] : pos[1]}${color ? ` text-${color}` : ""}`;
 }
 const alignValues = ["left", "center", "right", "justify"];
-const __nuxt_component_2 = createComponent({
+const __nuxt_component_3 = createComponent({
   name: "QTabs",
   props: {
     modelValue: [Number, String],
@@ -3668,13 +4277,30 @@ function useTab(props, slots, emit, routeData) {
   }
   return { renderTab, $tabs };
 }
-const __nuxt_component_3 = createComponent({
-  name: "QTab",
-  props: useTabProps,
+const __nuxt_component_4 = createComponent({
+  name: "QRouteTab",
+  props: {
+    ...useRouterLinkProps,
+    ...useTabProps
+  },
   emits: useTabEmits,
   setup(props, { slots, emit }) {
-    const { renderTab } = useTab(props, slots, emit);
-    return () => renderTab("div");
+    const routeData = useRouterLink({
+      useDisableForRouterLinkProps: false
+    });
+    const { renderTab, $tabs } = useTab(
+      props,
+      slots,
+      emit,
+      {
+        exact: computed(() => props.exact),
+        ...routeData
+      }
+    );
+    watch(() => `${props.name} | ${props.exact} | ${(routeData.resolvedLink.value || {}).href}`, () => {
+      $tabs.verifyRouteModel();
+    });
+    return () => renderTab(routeData.linkTag.value, routeData.linkAttrs.value);
   }
 });
 function clearSelection() {
@@ -3994,11 +4620,17 @@ const useDarkProps = {
 function useDark(props, $q) {
   return computed(() => props.dark === null ? $q.dark.isActive : props.dark);
 }
+let queue = [];
 let waitFlags = [];
 function addFocusFn(fn) {
   if (waitFlags.length === 0) {
     fn();
+  } else {
+    queue.push(fn);
   }
+}
+function removeFocusFn(fn) {
+  queue = queue.filter((entry2) => entry2 !== fn);
 }
 const portalProxyList = [];
 function closePortalMenus(proxy, evt) {
@@ -4465,7 +5097,7 @@ function applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrig
     }
   }
 }
-const __nuxt_component_5 = createComponent({
+const __nuxt_component_6 = createComponent({
   name: "QMenu",
   inheritAttrs: false,
   props: {
@@ -4692,7 +5324,7 @@ const __nuxt_component_5 = createComponent({
     return renderPortal;
   }
 });
-const __nuxt_component_6 = createComponent({
+const __nuxt_component_7 = createComponent({
   name: "QList",
   props: {
     ...useDarkProps,
@@ -4714,7 +5346,7 @@ const __nuxt_component_6 = createComponent({
     return () => h(props.tag, { class: classes.value }, hSlot(slots.default));
   }
 });
-const __nuxt_component_7 = createComponent({
+const __nuxt_component_8 = createComponent({
   name: "QItem",
   props: {
     ...useDarkProps,
@@ -4811,132 +5443,518 @@ const __nuxt_component_7 = createComponent({
     };
   }
 });
-const __nuxt_component_8 = createComponent({
-  name: "QItemSection",
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "NuxtParticles",
+  __ssrInlineRender: true,
   props: {
-    avatar: Boolean,
-    thumbnail: Boolean,
-    side: Boolean,
-    top: Boolean,
-    noWrap: Boolean
+    id: {},
+    options: {},
+    url: {}
   },
-  setup(props, { slots }) {
-    const classes = computed(
-      () => `q-item__section column q-item__section--${props.avatar === true || props.side === true || props.thumbnail === true ? "side" : "main"}` + (props.top === true ? " q-item__section--top justify-start" : " justify-center") + (props.avatar === true ? " q-item__section--avatar" : "") + (props.thumbnail === true ? " q-item__section--thumbnail" : "") + (props.noWrap === true ? " q-item__section--nowrap" : "")
-    );
-    return () => h("div", { class: classes.value }, hSlot(slots.default));
+  emits: ["load"],
+  setup(__props, { emit: __emit }) {
+    useState("__nuxt_particles_loaded", () => false);
+    const container = ref(void 0);
+    (/* @__PURE__ */ useRuntimeConfig()).public.particles;
+    onUnmounted(() => {
+      if (!container.value) {
+        return;
+      }
+      container.value.destroy();
+    });
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<div${ssrRenderAttrs(mergeProps({ id: _ctx.id }, _attrs))}></div>`);
+    };
   }
 });
+const _sfc_setup$3 = _sfc_main$3.setup;
+_sfc_main$3.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("node_modules/nuxt-particles/dist/runtime/components/NuxtParticles.vue");
+  return _sfc_setup$3 ? _sfc_setup$3(props, ctx) : void 0;
+};
+const interpolatePath = (route, match) => {
+  return match.path.replace(/(:\w+)\([^)]+\)/g, "$1").replace(/(:\w+)[?+*]/g, "$1").replace(/:\w+/g, (r) => {
+    var _a;
+    return ((_a = route.params[r.slice(1)]) == null ? void 0 : _a.toString()) || "";
+  });
+};
+const generateRouteKey = (routeProps, override) => {
+  const matchedRoute = routeProps.route.matched.find((m) => {
+    var _a;
+    return ((_a = m.components) == null ? void 0 : _a.default) === routeProps.Component.type;
+  });
+  const source = override ?? (matchedRoute == null ? void 0 : matchedRoute.meta.key) ?? (matchedRoute && interpolatePath(routeProps.route, matchedRoute));
+  return typeof source === "function" ? source(routeProps.route) : source;
+};
+const wrapInKeepAlive = (props, children) => {
+  return { default: () => children };
+};
+const RouteProvider = defineComponent({
+  props: {
+    vnode: {
+      type: Object,
+      required: true
+    },
+    route: {
+      type: Object,
+      required: true
+    },
+    vnodeRef: Object,
+    renderKey: String,
+    trackRootNodes: Boolean
+  },
+  setup(props) {
+    const previousKey = props.renderKey;
+    const previousRoute = props.route;
+    const route = {};
+    for (const key in props.route) {
+      Object.defineProperty(route, key, {
+        get: () => previousKey === props.renderKey ? props.route[key] : previousRoute[key]
+      });
+    }
+    provide(PageRouteSymbol, shallowReactive(route));
+    return () => {
+      return h(props.vnode, { ref: props.vnodeRef });
+    };
+  }
+});
+const __nuxt_component_11 = defineComponent({
+  name: "NuxtPage",
+  inheritAttrs: false,
+  props: {
+    name: {
+      type: String
+    },
+    transition: {
+      type: [Boolean, Object],
+      default: void 0
+    },
+    keepalive: {
+      type: [Boolean, Object],
+      default: void 0
+    },
+    route: {
+      type: Object
+    },
+    pageKey: {
+      type: [Function, String],
+      default: null
+    }
+  },
+  setup(props, { attrs, expose }) {
+    const nuxtApp = /* @__PURE__ */ useNuxtApp();
+    const pageRef = ref();
+    inject(PageRouteSymbol, null);
+    expose({ pageRef });
+    inject(LayoutMetaSymbol, null);
+    let vnode;
+    const done = nuxtApp.deferHydration();
+    return () => {
+      return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
+        default: (routeProps) => {
+          if (!routeProps.Component) {
+            done();
+            return;
+          }
+          const key = generateRouteKey(routeProps, props.pageKey);
+          const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? appPageTransition);
+          const transitionProps = hasTransition && _mergeTransitionProps([
+            props.transition,
+            routeProps.route.meta.pageTransition,
+            appPageTransition,
+            { onAfterLeave: () => {
+              nuxtApp.callHook("page:transition:finish", routeProps.Component);
+            } }
+          ].filter(Boolean));
+          const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? appKeepalive;
+          vnode = _wrapIf(
+            Transition,
+            hasTransition && transitionProps,
+            wrapInKeepAlive(
+              keepaliveConfig,
+              h(Suspense, {
+                suspensible: true,
+                onPending: () => nuxtApp.callHook("page:start", routeProps.Component),
+                onResolve: () => {
+                  nextTick(() => nuxtApp.callHook("page:finish", routeProps.Component).finally(done));
+                }
+              }, {
+                default: () => {
+                  const providerVNode = h(RouteProvider, {
+                    key: key || void 0,
+                    vnode: routeProps.Component,
+                    route: routeProps.route,
+                    renderKey: key || void 0,
+                    trackRootNodes: hasTransition,
+                    vnodeRef: pageRef
+                  });
+                  return providerVNode;
+                }
+              })
+            )
+          ).default();
+          return vnode;
+        }
+      });
+    };
+  }
+});
+function _toArray(val) {
+  return Array.isArray(val) ? val : val ? [val] : [];
+}
+function _mergeTransitionProps(routeProps) {
+  const _props = routeProps.map((prop) => ({
+    ...prop,
+    onAfterLeave: _toArray(prop.onAfterLeave)
+  }));
+  return defu(..._props);
+}
+const fullScreen = {
+  enable: true,
+  zIndex: -1
+};
+const particles = {
+  number: {
+    value: 100,
+    density: {
+      enable: true,
+      value_area: 800
+    }
+  },
+  color: {
+    value: "#16a34a"
+  },
+  shape: {
+    type: "circle",
+    stroke: {
+      width: 0,
+      color: "#b91c1c"
+    },
+    polygon: {
+      nb_sides: 5
+    },
+    image: {
+      src: "img/github.svg",
+      width: 100,
+      height: 100
+    }
+  },
+  opacity: {
+    value: 0.5,
+    random: true,
+    anim: {
+      enable: false,
+      speed: 1,
+      opacity_min: 0.1,
+      sync: false
+    }
+  },
+  size: {
+    value: 10,
+    random: true,
+    anim: {
+      enable: false,
+      speed: 40,
+      size_min: 0.1,
+      sync: false
+    }
+  },
+  line_linked: {
+    enable: false,
+    distance: 500,
+    color: "#ffffff",
+    opacity: 0.4,
+    width: 2
+  },
+  move: {
+    enable: true,
+    speed: 2,
+    direction: "none",
+    random: true,
+    straight: false,
+    out_mode: "bounce",
+    bounce: false,
+    attract: {
+      enable: false,
+      rotateX: 600,
+      rotateY: 1200
+    }
+  }
+};
+const retina_detect = true;
+const options = {
+  fullScreen,
+  particles,
+  retina_detect
+};
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "app",
   __ssrInlineRender: true,
   setup(__props) {
     const tab = ref("home");
+    const route = useRoute();
+    const onLoad = (container) => {
+      container.pause();
+      setTimeout(() => container.play(), 0);
+    };
     return (_ctx, _push, _parent, _attrs) => {
-      const _component_q_toolbar = __nuxt_component_0;
-      const _component_q_toolbar_title = __nuxt_component_1;
-      const _component_q_tabs = __nuxt_component_2;
-      const _component_q_tab = __nuxt_component_3;
-      const _component_q_btn = __nuxt_component_4;
-      const _component_q_menu = __nuxt_component_5;
-      const _component_q_list = __nuxt_component_6;
-      const _component_q_item = __nuxt_component_7;
-      const _component_q_item_section = __nuxt_component_8;
-      _push(`<div${ssrRenderAttrs(mergeProps({ class: "bg-slate-900 h-[100vh] w-[100vw] px-4" }, _attrs))}>`);
-      _push(ssrRenderComponent(_component_q_toolbar, { class: "text-white" }, {
+      const _component_NuxtLayout = __nuxt_component_0;
+      const _component_q_toolbar = __nuxt_component_1;
+      const _component_q_toolbar_title = __nuxt_component_2;
+      const _component_q_tabs = __nuxt_component_3;
+      const _component_q_route_tab = __nuxt_component_4;
+      const _component_q_btn = __nuxt_component_3$1;
+      const _component_q_menu = __nuxt_component_6;
+      const _component_q_list = __nuxt_component_7;
+      const _component_q_item = __nuxt_component_8;
+      const _component_NuxtLink = __nuxt_component_0$1;
+      const _component_NuxtParticles = _sfc_main$3;
+      const _component_NuxtPage = __nuxt_component_11;
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "h-screen min-h-full text-white" }, _attrs))}>`);
+      _push(ssrRenderComponent(_component_NuxtLayout, null, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
-            _push2(ssrRenderComponent(_component_q_toolbar_title, { class: "font-bold" }, {
+            _push2(`<header class="sticky top-0 left-0 w-full bg-slate-900 px-2" style="${ssrRenderStyle({ "z-index": "3" })}"${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_q_toolbar, { class: "text-white" }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(` GARNET CROOKES `);
-                } else {
-                  return [
-                    createTextVNode(" GARNET CROOKES ")
-                  ];
-                }
-              }),
-              _: 1
-            }, _parent2, _scopeId));
-            if (_ctx.$q.screen.gt.xs) {
-              _push2(ssrRenderComponent(_component_q_tabs, {
-                modelValue: unref(tab),
-                "onUpdate:modelValue": ($event) => isRef(tab) ? tab.value = $event : null,
-                shrink: ""
-              }, {
-                default: withCtx((_2, _push3, _parent3, _scopeId2) => {
-                  if (_push3) {
-                    _push3(ssrRenderComponent(_component_q_tab, {
-                      name: "home",
-                      label: "Home"
-                    }, null, _parent3, _scopeId2));
-                    _push3(ssrRenderComponent(_component_q_tab, {
-                      name: "about",
-                      label: "About"
-                    }, null, _parent3, _scopeId2));
-                    _push3(ssrRenderComponent(_component_q_tab, {
-                      name: "projects",
-                      label: "Projects"
-                    }, null, _parent3, _scopeId2));
-                    _push3(ssrRenderComponent(_component_q_tab, {
-                      name: "contact",
-                      label: "Contact"
-                    }, null, _parent3, _scopeId2));
-                  } else {
-                    return [
-                      createVNode(_component_q_tab, {
-                        name: "home",
-                        label: "Home"
-                      }),
-                      createVNode(_component_q_tab, {
-                        name: "about",
-                        label: "About"
-                      }),
-                      createVNode(_component_q_tab, {
-                        name: "projects",
-                        label: "Projects"
-                      }),
-                      createVNode(_component_q_tab, {
-                        name: "contact",
-                        label: "Contact"
-                      })
-                    ];
-                  }
-                }),
-                _: 1
-              }, _parent2, _scopeId));
-            } else {
-              _push2(ssrRenderComponent(_component_q_btn, {
-                flat: "",
-                round: "",
-                dense: "",
-                icon: "menu"
-              }, {
-                default: withCtx((_2, _push3, _parent3, _scopeId2) => {
-                  if (_push3) {
-                    _push3(ssrRenderComponent(_component_q_menu, {
-                      "auto-close": "",
-                      class: "bg-slate-800 text-white border border-white"
+                  _push3(ssrRenderComponent(_component_q_toolbar_title, { class: "font-bold text-3xl" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` GARNET CROOKES `);
+                      } else {
+                        return [
+                          createTextVNode(" GARNET CROOKES ")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  if (_ctx.$q.screen.gt.xs) {
+                    _push3(ssrRenderComponent(_component_q_tabs, {
+                      modelValue: unref(tab),
+                      "onUpdate:modelValue": ($event) => isRef(tab) ? tab.value = $event : null,
+                      shrink: ""
                     }, {
                       default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                         if (_push4) {
-                          _push4(ssrRenderComponent(_component_q_list, null, {
+                          _push4(ssrRenderComponent(_component_q_route_tab, {
+                            class: "rounded-lg",
+                            to: "/",
+                            name: "home",
+                            label: "Home"
+                          }, null, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(_component_q_route_tab, {
+                            class: "rounded-lg",
+                            to: "/about",
+                            name: "about",
+                            label: "About"
+                          }, null, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(_component_q_route_tab, {
+                            class: "rounded-lg",
+                            to: "/projects",
+                            name: "projects",
+                            label: "Projects"
+                          }, null, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(_component_q_route_tab, {
+                            class: "rounded-lg",
+                            to: "/contact",
+                            name: "contact",
+                            label: "Contact"
+                          }, null, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(_component_q_route_tab, {
+                              class: "rounded-lg",
+                              to: "/",
+                              name: "home",
+                              label: "Home"
+                            }),
+                            createVNode(_component_q_route_tab, {
+                              class: "rounded-lg",
+                              to: "/about",
+                              name: "about",
+                              label: "About"
+                            }),
+                            createVNode(_component_q_route_tab, {
+                              class: "rounded-lg",
+                              to: "/projects",
+                              name: "projects",
+                              label: "Projects"
+                            }),
+                            createVNode(_component_q_route_tab, {
+                              class: "rounded-lg",
+                              to: "/contact",
+                              name: "contact",
+                              label: "Contact"
+                            })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                  } else {
+                    _push3(ssrRenderComponent(_component_q_btn, {
+                      flat: "",
+                      round: "",
+                      dense: "",
+                      icon: "menu"
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(_component_q_menu, {
+                            "auto-close": "",
+                            class: "bg-slate-800 text-white border border-white"
+                          }, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(ssrRenderComponent(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "home",
-                                  class: [unref(tab) !== "home" ? "" : "underline"]
-                                }, {
+                                _push5(ssrRenderComponent(_component_q_list, null, {
                                   default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                     if (_push6) {
-                                      _push6(ssrRenderComponent(_component_q_item_section, null, {
+                                      _push6(ssrRenderComponent(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/" ? "" : "underline"]
+                                      }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`Home`);
+                                            _push7(ssrRenderComponent(_component_NuxtLink, {
+                                              to: "/",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx((_7, _push8, _parent8, _scopeId7) => {
+                                                if (_push8) {
+                                                  _push8(`Home`);
+                                                } else {
+                                                  return [
+                                                    createTextVNode("Home")
+                                                  ];
+                                                }
+                                              }),
+                                              _: 1
+                                            }, _parent7, _scopeId6));
                                           } else {
                                             return [
-                                              createTextVNode("Home")
+                                              createVNode(_component_NuxtLink, {
+                                                to: "/",
+                                                class: "flex font-bold h-full w-full text-center items-center"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Home")
+                                                ]),
+                                                _: 1
+                                              })
+                                            ];
+                                          }
+                                        }),
+                                        _: 1
+                                      }, _parent6, _scopeId5));
+                                      _push6(ssrRenderComponent(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/about" ? "" : "underline"]
+                                      }, {
+                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                          if (_push7) {
+                                            _push7(ssrRenderComponent(_component_NuxtLink, {
+                                              to: "/about",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx((_7, _push8, _parent8, _scopeId7) => {
+                                                if (_push8) {
+                                                  _push8(`About`);
+                                                } else {
+                                                  return [
+                                                    createTextVNode("About")
+                                                  ];
+                                                }
+                                              }),
+                                              _: 1
+                                            }, _parent7, _scopeId6));
+                                          } else {
+                                            return [
+                                              createVNode(_component_NuxtLink, {
+                                                to: "/about",
+                                                class: "flex font-bold h-full w-full text-center items-center"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("About")
+                                                ]),
+                                                _: 1
+                                              })
+                                            ];
+                                          }
+                                        }),
+                                        _: 1
+                                      }, _parent6, _scopeId5));
+                                      _push6(ssrRenderComponent(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/projects" ? "" : "underline"]
+                                      }, {
+                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                          if (_push7) {
+                                            _push7(ssrRenderComponent(_component_NuxtLink, {
+                                              to: "/projects",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx((_7, _push8, _parent8, _scopeId7) => {
+                                                if (_push8) {
+                                                  _push8(`Projects`);
+                                                } else {
+                                                  return [
+                                                    createTextVNode("Projects")
+                                                  ];
+                                                }
+                                              }),
+                                              _: 1
+                                            }, _parent7, _scopeId6));
+                                          } else {
+                                            return [
+                                              createVNode(_component_NuxtLink, {
+                                                to: "/projects",
+                                                class: "flex font-bold h-full w-full text-center items-center"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Projects")
+                                                ]),
+                                                _: 1
+                                              })
+                                            ];
+                                          }
+                                        }),
+                                        _: 1
+                                      }, _parent6, _scopeId5));
+                                      _push6(ssrRenderComponent(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/contact" ? "" : "underline"]
+                                      }, {
+                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                          if (_push7) {
+                                            _push7(ssrRenderComponent(_component_NuxtLink, {
+                                              to: "/contact",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx((_7, _push8, _parent8, _scopeId7) => {
+                                                if (_push8) {
+                                                  _push8(`Contact`);
+                                                } else {
+                                                  return [
+                                                    createTextVNode("Contact")
+                                                  ];
+                                                }
+                                              }),
+                                              _: 1
+                                            }, _parent7, _scopeId6));
+                                          } else {
+                                            return [
+                                              createVNode(_component_NuxtLink, {
+                                                to: "/contact",
+                                                class: "flex font-bold h-full w-full text-center items-center"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Contact")
+                                                ]),
+                                                _: 1
+                                              })
                                             ];
                                           }
                                         }),
@@ -4944,108 +5962,74 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                       }, _parent6, _scopeId5));
                                     } else {
                                       return [
-                                        createVNode(_component_q_item_section, null, {
+                                        createVNode(_component_q_item, {
+                                          clickable: "",
+                                          class: [unref(route).path !== "/" ? "" : "underline"]
+                                        }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Home")
+                                            createVNode(_component_NuxtLink, {
+                                              to: "/",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode("Home")
+                                              ]),
+                                              _: 1
+                                            })
                                           ]),
                                           _: 1
-                                        })
-                                      ];
-                                    }
-                                  }),
-                                  _: 1
-                                }, _parent5, _scopeId4));
-                                _push5(ssrRenderComponent(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "about",
-                                  class: [unref(tab) !== "about" ? "" : "underline"]
-                                }, {
-                                  default: withCtx((_5, _push6, _parent6, _scopeId5) => {
-                                    if (_push6) {
-                                      _push6(ssrRenderComponent(_component_q_item_section, null, {
-                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
-                                          if (_push7) {
-                                            _push7(`About`);
-                                          } else {
-                                            return [
-                                              createTextVNode("About")
-                                            ];
-                                          }
-                                        }),
-                                        _: 1
-                                      }, _parent6, _scopeId5));
-                                    } else {
-                                      return [
-                                        createVNode(_component_q_item_section, null, {
+                                        }, 8, ["class"]),
+                                        createVNode(_component_q_item, {
+                                          clickable: "",
+                                          class: [unref(route).path !== "/about" ? "" : "underline"]
+                                        }, {
                                           default: withCtx(() => [
-                                            createTextVNode("About")
+                                            createVNode(_component_NuxtLink, {
+                                              to: "/about",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode("About")
+                                              ]),
+                                              _: 1
+                                            })
                                           ]),
                                           _: 1
-                                        })
-                                      ];
-                                    }
-                                  }),
-                                  _: 1
-                                }, _parent5, _scopeId4));
-                                _push5(ssrRenderComponent(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "projects",
-                                  class: [unref(tab) !== "projects" ? "" : "underline"]
-                                }, {
-                                  default: withCtx((_5, _push6, _parent6, _scopeId5) => {
-                                    if (_push6) {
-                                      _push6(ssrRenderComponent(_component_q_item_section, null, {
-                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
-                                          if (_push7) {
-                                            _push7(`Projects`);
-                                          } else {
-                                            return [
-                                              createTextVNode("Projects")
-                                            ];
-                                          }
-                                        }),
-                                        _: 1
-                                      }, _parent6, _scopeId5));
-                                    } else {
-                                      return [
-                                        createVNode(_component_q_item_section, null, {
+                                        }, 8, ["class"]),
+                                        createVNode(_component_q_item, {
+                                          clickable: "",
+                                          class: [unref(route).path !== "/projects" ? "" : "underline"]
+                                        }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Projects")
+                                            createVNode(_component_NuxtLink, {
+                                              to: "/projects",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode("Projects")
+                                              ]),
+                                              _: 1
+                                            })
                                           ]),
                                           _: 1
-                                        })
-                                      ];
-                                    }
-                                  }),
-                                  _: 1
-                                }, _parent5, _scopeId4));
-                                _push5(ssrRenderComponent(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "contact",
-                                  class: [unref(tab) !== "contact" ? "" : "underline"]
-                                }, {
-                                  default: withCtx((_5, _push6, _parent6, _scopeId5) => {
-                                    if (_push6) {
-                                      _push6(ssrRenderComponent(_component_q_item_section, null, {
-                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
-                                          if (_push7) {
-                                            _push7(`Contact`);
-                                          } else {
-                                            return [
-                                              createTextVNode("Contact")
-                                            ];
-                                          }
-                                        }),
-                                        _: 1
-                                      }, _parent6, _scopeId5));
-                                    } else {
-                                      return [
-                                        createVNode(_component_q_item_section, null, {
+                                        }, 8, ["class"]),
+                                        createVNode(_component_q_item, {
+                                          clickable: "",
+                                          class: [unref(route).path !== "/contact" ? "" : "underline"]
+                                        }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Contact")
+                                            createVNode(_component_NuxtLink, {
+                                              to: "/contact",
+                                              class: "flex font-bold h-full w-full text-center items-center"
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode("Contact")
+                                              ]),
+                                              _: 1
+                                            })
                                           ]),
                                           _: 1
-                                        })
+                                        }, 8, ["class"])
                                       ];
                                     }
                                   }),
@@ -5053,66 +6037,79 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                 }, _parent5, _scopeId4));
                               } else {
                                 return [
-                                  createVNode(_component_q_item, {
-                                    clickable: "",
-                                    onClick: ($event) => tab.value = "home",
-                                    class: [unref(tab) !== "home" ? "" : "underline"]
-                                  }, {
+                                  createVNode(_component_q_list, null, {
                                     default: withCtx(() => [
-                                      createVNode(_component_q_item_section, null, {
+                                      createVNode(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/" ? "" : "underline"]
+                                      }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Home")
+                                          createVNode(_component_NuxtLink, {
+                                            to: "/",
+                                            class: "flex font-bold h-full w-full text-center items-center"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Home")
+                                            ]),
+                                            _: 1
+                                          })
                                         ]),
                                         _: 1
-                                      })
-                                    ]),
-                                    _: 1
-                                  }, 8, ["onClick", "class"]),
-                                  createVNode(_component_q_item, {
-                                    clickable: "",
-                                    onClick: ($event) => tab.value = "about",
-                                    class: [unref(tab) !== "about" ? "" : "underline"]
-                                  }, {
-                                    default: withCtx(() => [
-                                      createVNode(_component_q_item_section, null, {
+                                      }, 8, ["class"]),
+                                      createVNode(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/about" ? "" : "underline"]
+                                      }, {
                                         default: withCtx(() => [
-                                          createTextVNode("About")
+                                          createVNode(_component_NuxtLink, {
+                                            to: "/about",
+                                            class: "flex font-bold h-full w-full text-center items-center"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("About")
+                                            ]),
+                                            _: 1
+                                          })
                                         ]),
                                         _: 1
-                                      })
-                                    ]),
-                                    _: 1
-                                  }, 8, ["onClick", "class"]),
-                                  createVNode(_component_q_item, {
-                                    clickable: "",
-                                    onClick: ($event) => tab.value = "projects",
-                                    class: [unref(tab) !== "projects" ? "" : "underline"]
-                                  }, {
-                                    default: withCtx(() => [
-                                      createVNode(_component_q_item_section, null, {
+                                      }, 8, ["class"]),
+                                      createVNode(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/projects" ? "" : "underline"]
+                                      }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Projects")
+                                          createVNode(_component_NuxtLink, {
+                                            to: "/projects",
+                                            class: "flex font-bold h-full w-full text-center items-center"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Projects")
+                                            ]),
+                                            _: 1
+                                          })
                                         ]),
                                         _: 1
-                                      })
-                                    ]),
-                                    _: 1
-                                  }, 8, ["onClick", "class"]),
-                                  createVNode(_component_q_item, {
-                                    clickable: "",
-                                    onClick: ($event) => tab.value = "contact",
-                                    class: [unref(tab) !== "contact" ? "" : "underline"]
-                                  }, {
-                                    default: withCtx(() => [
-                                      createVNode(_component_q_item_section, null, {
+                                      }, 8, ["class"]),
+                                      createVNode(_component_q_item, {
+                                        clickable: "",
+                                        class: [unref(route).path !== "/contact" ? "" : "underline"]
+                                      }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Contact")
+                                          createVNode(_component_NuxtLink, {
+                                            to: "/contact",
+                                            class: "flex font-bold h-full w-full text-center items-center"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Contact")
+                                            ]),
+                                            _: 1
+                                          })
                                         ]),
                                         _: 1
-                                      })
+                                      }, 8, ["class"])
                                     ]),
                                     _: 1
-                                  }, 8, ["onClick", "class"])
+                                  })
                                 ];
                               }
                             }),
@@ -5120,68 +6117,84 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, _parent4, _scopeId3));
                         } else {
                           return [
-                            createVNode(_component_q_list, null, {
+                            createVNode(_component_q_menu, {
+                              "auto-close": "",
+                              class: "bg-slate-800 text-white border border-white"
+                            }, {
                               default: withCtx(() => [
-                                createVNode(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "home",
-                                  class: [unref(tab) !== "home" ? "" : "underline"]
-                                }, {
+                                createVNode(_component_q_list, null, {
                                   default: withCtx(() => [
-                                    createVNode(_component_q_item_section, null, {
+                                    createVNode(_component_q_item, {
+                                      clickable: "",
+                                      class: [unref(route).path !== "/" ? "" : "underline"]
+                                    }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Home")
+                                        createVNode(_component_NuxtLink, {
+                                          to: "/",
+                                          class: "flex font-bold h-full w-full text-center items-center"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Home")
+                                          ]),
+                                          _: 1
+                                        })
                                       ]),
                                       _: 1
-                                    })
-                                  ]),
-                                  _: 1
-                                }, 8, ["onClick", "class"]),
-                                createVNode(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "about",
-                                  class: [unref(tab) !== "about" ? "" : "underline"]
-                                }, {
-                                  default: withCtx(() => [
-                                    createVNode(_component_q_item_section, null, {
+                                    }, 8, ["class"]),
+                                    createVNode(_component_q_item, {
+                                      clickable: "",
+                                      class: [unref(route).path !== "/about" ? "" : "underline"]
+                                    }, {
                                       default: withCtx(() => [
-                                        createTextVNode("About")
+                                        createVNode(_component_NuxtLink, {
+                                          to: "/about",
+                                          class: "flex font-bold h-full w-full text-center items-center"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("About")
+                                          ]),
+                                          _: 1
+                                        })
                                       ]),
                                       _: 1
-                                    })
-                                  ]),
-                                  _: 1
-                                }, 8, ["onClick", "class"]),
-                                createVNode(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "projects",
-                                  class: [unref(tab) !== "projects" ? "" : "underline"]
-                                }, {
-                                  default: withCtx(() => [
-                                    createVNode(_component_q_item_section, null, {
+                                    }, 8, ["class"]),
+                                    createVNode(_component_q_item, {
+                                      clickable: "",
+                                      class: [unref(route).path !== "/projects" ? "" : "underline"]
+                                    }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Projects")
+                                        createVNode(_component_NuxtLink, {
+                                          to: "/projects",
+                                          class: "flex font-bold h-full w-full text-center items-center"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Projects")
+                                          ]),
+                                          _: 1
+                                        })
                                       ]),
                                       _: 1
-                                    })
-                                  ]),
-                                  _: 1
-                                }, 8, ["onClick", "class"]),
-                                createVNode(_component_q_item, {
-                                  clickable: "",
-                                  onClick: ($event) => tab.value = "contact",
-                                  class: [unref(tab) !== "contact" ? "" : "underline"]
-                                }, {
-                                  default: withCtx(() => [
-                                    createVNode(_component_q_item_section, null, {
+                                    }, 8, ["class"]),
+                                    createVNode(_component_q_item, {
+                                      clickable: "",
+                                      class: [unref(route).path !== "/contact" ? "" : "underline"]
+                                    }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Contact")
+                                        createVNode(_component_NuxtLink, {
+                                          to: "/contact",
+                                          class: "flex font-bold h-full w-full text-center items-center"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Contact")
+                                          ]),
+                                          _: 1
+                                        })
                                       ]),
                                       _: 1
-                                    })
+                                    }, 8, ["class"])
                                   ]),
                                   _: 1
-                                }, 8, ["onClick", "class"])
+                                })
                               ]),
                               _: 1
                             })
@@ -5190,217 +6203,317 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                       }),
                       _: 1
                     }, _parent3, _scopeId2));
-                  } else {
-                    return [
-                      createVNode(_component_q_menu, {
-                        "auto-close": "",
-                        class: "bg-slate-800 text-white border border-white"
-                      }, {
-                        default: withCtx(() => [
-                          createVNode(_component_q_list, null, {
-                            default: withCtx(() => [
-                              createVNode(_component_q_item, {
-                                clickable: "",
-                                onClick: ($event) => tab.value = "home",
-                                class: [unref(tab) !== "home" ? "" : "underline"]
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(_component_q_item_section, null, {
-                                    default: withCtx(() => [
-                                      createTextVNode("Home")
-                                    ]),
-                                    _: 1
-                                  })
-                                ]),
-                                _: 1
-                              }, 8, ["onClick", "class"]),
-                              createVNode(_component_q_item, {
-                                clickable: "",
-                                onClick: ($event) => tab.value = "about",
-                                class: [unref(tab) !== "about" ? "" : "underline"]
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(_component_q_item_section, null, {
-                                    default: withCtx(() => [
-                                      createTextVNode("About")
-                                    ]),
-                                    _: 1
-                                  })
-                                ]),
-                                _: 1
-                              }, 8, ["onClick", "class"]),
-                              createVNode(_component_q_item, {
-                                clickable: "",
-                                onClick: ($event) => tab.value = "projects",
-                                class: [unref(tab) !== "projects" ? "" : "underline"]
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(_component_q_item_section, null, {
-                                    default: withCtx(() => [
-                                      createTextVNode("Projects")
-                                    ]),
-                                    _: 1
-                                  })
-                                ]),
-                                _: 1
-                              }, 8, ["onClick", "class"]),
-                              createVNode(_component_q_item, {
-                                clickable: "",
-                                onClick: ($event) => tab.value = "contact",
-                                class: [unref(tab) !== "contact" ? "" : "underline"]
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(_component_q_item_section, null, {
-                                    default: withCtx(() => [
-                                      createTextVNode("Contact")
-                                    ]),
-                                    _: 1
-                                  })
-                                ]),
-                                _: 1
-                              }, 8, ["onClick", "class"])
-                            ]),
-                            _: 1
-                          })
-                        ]),
-                        _: 1
-                      })
-                    ];
                   }
-                }),
-                _: 1
-              }, _parent2, _scopeId));
-            }
+                } else {
+                  return [
+                    createVNode(_component_q_toolbar_title, { class: "font-bold text-3xl" }, {
+                      default: withCtx(() => [
+                        createTextVNode(" GARNET CROOKES ")
+                      ]),
+                      _: 1
+                    }),
+                    _ctx.$q.screen.gt.xs ? (openBlock(), createBlock(_component_q_tabs, {
+                      key: 0,
+                      modelValue: unref(tab),
+                      "onUpdate:modelValue": ($event) => isRef(tab) ? tab.value = $event : null,
+                      shrink: ""
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/",
+                          name: "home",
+                          label: "Home"
+                        }),
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/about",
+                          name: "about",
+                          label: "About"
+                        }),
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/projects",
+                          name: "projects",
+                          label: "Projects"
+                        }),
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/contact",
+                          name: "contact",
+                          label: "Contact"
+                        })
+                      ]),
+                      _: 1
+                    }, 8, ["modelValue", "onUpdate:modelValue"])) : (openBlock(), createBlock(_component_q_btn, {
+                      key: 1,
+                      flat: "",
+                      round: "",
+                      dense: "",
+                      icon: "menu"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_q_menu, {
+                          "auto-close": "",
+                          class: "bg-slate-800 text-white border border-white"
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(_component_q_list, null, {
+                              default: withCtx(() => [
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Home")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"]),
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/about" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/about",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("About")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"]),
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/projects" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/projects",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Projects")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"]),
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/contact" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/contact",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Contact")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"])
+                              ]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }))
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+            _push2(`</header><div class="${ssrRenderClass(["flex flex-row justify-center pb-8", _ctx.$q.screen.lt.md ? "mx-8" : ""])}"${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_NuxtParticles, {
+              id: "tsparticles",
+              options: unref(options),
+              onLoad
+            }, null, _parent2, _scopeId));
+            _push2(ssrRenderComponent(_component_NuxtPage, null, null, _parent2, _scopeId));
+            _push2(`</div><footer class="fixed bottom-0 w-full h-8 flex items-center justify-center bg-slate-900 px-8 text-xs" style="${ssrRenderStyle({ "z-index": "3" })}"${_scopeId}><div${_scopeId}> Copyright © 2024 Garnet Crookes. All rights reserved </div></footer>`);
           } else {
             return [
-              createVNode(_component_q_toolbar_title, { class: "font-bold" }, {
-                default: withCtx(() => [
-                  createTextVNode(" GARNET CROOKES ")
-                ]),
-                _: 1
-              }),
-              _ctx.$q.screen.gt.xs ? (openBlock(), createBlock(_component_q_tabs, {
-                key: 0,
-                modelValue: unref(tab),
-                "onUpdate:modelValue": ($event) => isRef(tab) ? tab.value = $event : null,
-                shrink: ""
-              }, {
-                default: withCtx(() => [
-                  createVNode(_component_q_tab, {
-                    name: "home",
-                    label: "Home"
-                  }),
-                  createVNode(_component_q_tab, {
-                    name: "about",
-                    label: "About"
-                  }),
-                  createVNode(_component_q_tab, {
-                    name: "projects",
-                    label: "Projects"
-                  }),
-                  createVNode(_component_q_tab, {
-                    name: "contact",
-                    label: "Contact"
-                  })
-                ]),
-                _: 1
-              }, 8, ["modelValue", "onUpdate:modelValue"])) : (openBlock(), createBlock(_component_q_btn, {
-                key: 1,
-                flat: "",
-                round: "",
-                dense: "",
-                icon: "menu"
-              }, {
-                default: withCtx(() => [
-                  createVNode(_component_q_menu, {
-                    "auto-close": "",
-                    class: "bg-slate-800 text-white border border-white"
-                  }, {
-                    default: withCtx(() => [
-                      createVNode(_component_q_list, null, {
-                        default: withCtx(() => [
-                          createVNode(_component_q_item, {
-                            clickable: "",
-                            onClick: ($event) => tab.value = "home",
-                            class: [unref(tab) !== "home" ? "" : "underline"]
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(_component_q_item_section, null, {
-                                default: withCtx(() => [
-                                  createTextVNode("Home")
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            _: 1
-                          }, 8, ["onClick", "class"]),
-                          createVNode(_component_q_item, {
-                            clickable: "",
-                            onClick: ($event) => tab.value = "about",
-                            class: [unref(tab) !== "about" ? "" : "underline"]
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(_component_q_item_section, null, {
-                                default: withCtx(() => [
-                                  createTextVNode("About")
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            _: 1
-                          }, 8, ["onClick", "class"]),
-                          createVNode(_component_q_item, {
-                            clickable: "",
-                            onClick: ($event) => tab.value = "projects",
-                            class: [unref(tab) !== "projects" ? "" : "underline"]
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(_component_q_item_section, null, {
-                                default: withCtx(() => [
-                                  createTextVNode("Projects")
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            _: 1
-                          }, 8, ["onClick", "class"]),
-                          createVNode(_component_q_item, {
-                            clickable: "",
-                            onClick: ($event) => tab.value = "contact",
-                            class: [unref(tab) !== "contact" ? "" : "underline"]
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(_component_q_item_section, null, {
-                                default: withCtx(() => [
-                                  createTextVNode("Contact")
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            _: 1
-                          }, 8, ["onClick", "class"])
-                        ]),
-                        _: 1
-                      })
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              }))
+              createVNode("header", {
+                class: "sticky top-0 left-0 w-full bg-slate-900 px-2",
+                style: { "z-index": "3" }
+              }, [
+                createVNode(_component_q_toolbar, { class: "text-white" }, {
+                  default: withCtx(() => [
+                    createVNode(_component_q_toolbar_title, { class: "font-bold text-3xl" }, {
+                      default: withCtx(() => [
+                        createTextVNode(" GARNET CROOKES ")
+                      ]),
+                      _: 1
+                    }),
+                    _ctx.$q.screen.gt.xs ? (openBlock(), createBlock(_component_q_tabs, {
+                      key: 0,
+                      modelValue: unref(tab),
+                      "onUpdate:modelValue": ($event) => isRef(tab) ? tab.value = $event : null,
+                      shrink: ""
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/",
+                          name: "home",
+                          label: "Home"
+                        }),
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/about",
+                          name: "about",
+                          label: "About"
+                        }),
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/projects",
+                          name: "projects",
+                          label: "Projects"
+                        }),
+                        createVNode(_component_q_route_tab, {
+                          class: "rounded-lg",
+                          to: "/contact",
+                          name: "contact",
+                          label: "Contact"
+                        })
+                      ]),
+                      _: 1
+                    }, 8, ["modelValue", "onUpdate:modelValue"])) : (openBlock(), createBlock(_component_q_btn, {
+                      key: 1,
+                      flat: "",
+                      round: "",
+                      dense: "",
+                      icon: "menu"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(_component_q_menu, {
+                          "auto-close": "",
+                          class: "bg-slate-800 text-white border border-white"
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(_component_q_list, null, {
+                              default: withCtx(() => [
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Home")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"]),
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/about" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/about",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("About")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"]),
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/projects" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/projects",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Projects")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"]),
+                                createVNode(_component_q_item, {
+                                  clickable: "",
+                                  class: [unref(route).path !== "/contact" ? "" : "underline"]
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(_component_NuxtLink, {
+                                      to: "/contact",
+                                      class: "flex font-bold h-full w-full text-center items-center"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Contact")
+                                      ]),
+                                      _: 1
+                                    })
+                                  ]),
+                                  _: 1
+                                }, 8, ["class"])
+                              ]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }))
+                  ]),
+                  _: 1
+                })
+              ]),
+              createVNode("div", {
+                class: ["flex flex-row justify-center pb-8", _ctx.$q.screen.lt.md ? "mx-8" : ""]
+              }, [
+                createVNode(_component_NuxtParticles, {
+                  id: "tsparticles",
+                  options: unref(options),
+                  onLoad
+                }, null, 8, ["options"]),
+                createVNode(_component_NuxtPage)
+              ], 2),
+              createVNode("footer", {
+                class: "fixed bottom-0 w-full h-8 flex items-center justify-center bg-slate-900 px-8 text-xs",
+                style: { "z-index": "3" }
+              }, [
+                createVNode("div", null, " Copyright © 2024 Garnet Crookes. All rights reserved ")
+              ])
             ];
           }
         }),
         _: 1
       }, _parent));
-      _push(ssrRenderComponent(_component_q_btn, {
-        color: "primary",
-        label: "primary"
-      }, null, _parent));
-      _push(ssrRenderComponent(_component_q_btn, {
-        color: "secondary",
-        label: "secondary"
-      }, null, _parent));
       _push(`</div>`);
     };
   }
@@ -5432,8 +6545,8 @@ const _sfc_main$1 = {
     const statusMessage = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
     const description = _error.message || _error.toString();
     const stack = void 0;
-    const _Error404 = defineAsyncComponent(() => import('./_nuxt/error-404-b2389693.mjs').then((r) => r.default || r));
-    const _Error = defineAsyncComponent(() => import('./_nuxt/error-500-acbe754a.mjs').then((r) => r.default || r));
+    const _Error404 = defineAsyncComponent(() => import('./_nuxt/error-404-fed5e3b1.mjs').then((r) => r.default || r));
+    const _Error = defineAsyncComponent(() => import('./_nuxt/error-500-81a1124e.mjs').then((r) => r.default || r));
     const ErrorTemplate = is404 ? _Error404 : _Error;
     return (_ctx, _push, _parent, _attrs) => {
       _push(ssrRenderComponent(unref(ErrorTemplate), mergeProps({ statusCode: unref(statusCode), statusMessage: unref(statusMessage), description: unref(description), stack: unref(stack) }, _attrs), null, _parent));
@@ -5451,7 +6564,7 @@ const _sfc_main = {
   __name: "nuxt-root",
   __ssrInlineRender: true,
   setup(__props) {
-    const IslandRenderer = defineAsyncComponent(() => import('./_nuxt/island-renderer-8a059ee1.mjs').then((r) => r.default || r));
+    const IslandRenderer = defineAsyncComponent(() => import('./_nuxt/island-renderer-8be1708f.mjs').then((r) => r.default || r));
     const nuxtApp = /* @__PURE__ */ useNuxtApp();
     nuxtApp.deferHydration();
     nuxtApp.ssrContext.url;
@@ -5513,5 +6626,5 @@ let entry;
 }
 const entry$1 = (ctx) => entry(ctx);
 
-export { useRuntimeConfig as a, useHead as b, createError as c, entry$1 as default, navigateTo as n, useRouter as u };
+export { QIcon as Q, __nuxt_component_0$1 as _, createComponent as a, addFocusFn as b, createError as c, uid as d, entry$1 as default, useDarkProps as e, formKey as f, useDark as g, hSlot as h, QSpinner as i, shouldIgnoreKey as j, client as k, stop as l, __nuxt_component_3$1 as m, prevent as p, removeFocusFn as r, stopAndPrevent as s, useHead as u, vmIsDestroyed as v };
 //# sourceMappingURL=server.mjs.map

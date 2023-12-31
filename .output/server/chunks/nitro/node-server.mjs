@@ -84,16 +84,16 @@ const ENC_BACKTICK_RE = /%60/gi;
 const ENC_PIPE_RE = /%7c/gi;
 const ENC_SPACE_RE = /%20/gi;
 const ENC_SLASH_RE = /%2f/gi;
-function encode(text) {
+function encode$1(text) {
   return encodeURI("" + text).replace(ENC_PIPE_RE, "|");
 }
 function encodeQueryValue(input) {
-  return encode(typeof input === "string" ? input : JSON.stringify(input)).replace(PLUS_RE, "%2B").replace(ENC_SPACE_RE, "+").replace(HASH_RE, "%23").replace(AMPERSAND_RE, "%26").replace(ENC_BACKTICK_RE, "`").replace(ENC_CARET_RE, "^");
+  return encode$1(typeof input === "string" ? input : JSON.stringify(input)).replace(PLUS_RE, "%2B").replace(ENC_SPACE_RE, "+").replace(HASH_RE, "%23").replace(AMPERSAND_RE, "%26").replace(ENC_BACKTICK_RE, "`").replace(ENC_CARET_RE, "^");
 }
 function encodeQueryKey(text) {
   return encodeQueryValue(text).replace(EQUAL_RE, "%3D");
 }
-function decode(text = "") {
+function decode$1(text = "") {
   try {
     return decodeURIComponent("" + text);
   } catch {
@@ -101,13 +101,13 @@ function decode(text = "") {
   }
 }
 function decodePath(text) {
-  return decode(text.replace(ENC_SLASH_RE, "%252F"));
+  return decode$1(text.replace(ENC_SLASH_RE, "%252F"));
 }
 function decodeQueryKey(text) {
-  return decode(text.replace(PLUS_RE, " "));
+  return decode$1(text.replace(PLUS_RE, " "));
 }
 function decodeQueryValue(text) {
-  return decode(text.replace(PLUS_RE, " "));
+  return decode$1(text.replace(PLUS_RE, " "));
 }
 
 function parseQuery(parametersString = "") {
@@ -265,21 +265,6 @@ function joinURL(base, ...input) {
   }
   return url;
 }
-function isEqual(a, b, options = {}) {
-  if (!options.trailingSlash) {
-    a = withTrailingSlash(a);
-    b = withTrailingSlash(b);
-  }
-  if (!options.leadingSlash) {
-    a = withLeadingSlash(a);
-    b = withLeadingSlash(b);
-  }
-  if (!options.encoding) {
-    a = decode(a);
-    b = decode(b);
-  }
-  return a === b;
-}
 
 function parseURL(input = "", defaultProto) {
   const _specialProtoMatch = input.match(
@@ -330,6 +315,138 @@ function stringifyParsedURL(parsed) {
   const host = parsed.host || "";
   const proto = parsed.protocol ? parsed.protocol + "//" : "";
   return proto + auth + host + pathname + search + hash;
+}
+
+const fieldContentRegExp = /^[\u0009\u0020-\u007E\u0080-\u00FF]+$/;
+function parse(str, options) {
+  if (typeof str !== "string") {
+    throw new TypeError("argument str must be a string");
+  }
+  const obj = {};
+  const opt = options || {};
+  const dec = opt.decode || decode;
+  let index = 0;
+  while (index < str.length) {
+    const eqIdx = str.indexOf("=", index);
+    if (eqIdx === -1) {
+      break;
+    }
+    let endIdx = str.indexOf(";", index);
+    if (endIdx === -1) {
+      endIdx = str.length;
+    } else if (endIdx < eqIdx) {
+      index = str.lastIndexOf(";", eqIdx - 1) + 1;
+      continue;
+    }
+    const key = str.slice(index, eqIdx).trim();
+    if (void 0 === obj[key]) {
+      let val = str.slice(eqIdx + 1, endIdx).trim();
+      if (val.codePointAt(0) === 34) {
+        val = val.slice(1, -1);
+      }
+      obj[key] = tryDecode(val, dec);
+    }
+    index = endIdx + 1;
+  }
+  return obj;
+}
+function serialize(name, value, options) {
+  const opt = options || {};
+  const enc = opt.encode || encode;
+  if (typeof enc !== "function") {
+    throw new TypeError("option encode is invalid");
+  }
+  if (!fieldContentRegExp.test(name)) {
+    throw new TypeError("argument name is invalid");
+  }
+  const encodedValue = enc(value);
+  if (encodedValue && !fieldContentRegExp.test(encodedValue)) {
+    throw new TypeError("argument val is invalid");
+  }
+  let str = name + "=" + encodedValue;
+  if (void 0 !== opt.maxAge && opt.maxAge !== null) {
+    const maxAge = opt.maxAge - 0;
+    if (Number.isNaN(maxAge) || !Number.isFinite(maxAge)) {
+      throw new TypeError("option maxAge is invalid");
+    }
+    str += "; Max-Age=" + Math.floor(maxAge);
+  }
+  if (opt.domain) {
+    if (!fieldContentRegExp.test(opt.domain)) {
+      throw new TypeError("option domain is invalid");
+    }
+    str += "; Domain=" + opt.domain;
+  }
+  if (opt.path) {
+    if (!fieldContentRegExp.test(opt.path)) {
+      throw new TypeError("option path is invalid");
+    }
+    str += "; Path=" + opt.path;
+  }
+  if (opt.expires) {
+    if (!isDate(opt.expires) || Number.isNaN(opt.expires.valueOf())) {
+      throw new TypeError("option expires is invalid");
+    }
+    str += "; Expires=" + opt.expires.toUTCString();
+  }
+  if (opt.httpOnly) {
+    str += "; HttpOnly";
+  }
+  if (opt.secure) {
+    str += "; Secure";
+  }
+  if (opt.priority) {
+    const priority = typeof opt.priority === "string" ? opt.priority.toLowerCase() : opt.priority;
+    switch (priority) {
+      case "low":
+        str += "; Priority=Low";
+        break;
+      case "medium":
+        str += "; Priority=Medium";
+        break;
+      case "high":
+        str += "; Priority=High";
+        break;
+      default:
+        throw new TypeError("option priority is invalid");
+    }
+  }
+  if (opt.sameSite) {
+    const sameSite = typeof opt.sameSite === "string" ? opt.sameSite.toLowerCase() : opt.sameSite;
+    switch (sameSite) {
+      case true:
+        str += "; SameSite=Strict";
+        break;
+      case "lax":
+        str += "; SameSite=Lax";
+        break;
+      case "strict":
+        str += "; SameSite=Strict";
+        break;
+      case "none":
+        str += "; SameSite=None";
+        break;
+      default:
+        throw new TypeError("option sameSite is invalid");
+    }
+  }
+  return str;
+}
+function isDate(val) {
+  return Object.prototype.toString.call(val) === "[object Date]" || val instanceof Date;
+}
+function tryDecode(str, decode2) {
+  try {
+    return decode2(str);
+  } catch {
+    return str;
+  }
+}
+function decode(str) {
+  return str.includes("%") ? decodeURIComponent(str) : str;
+}
+function encode(val) {
+  return encodeURIComponent(val);
 }
 
 const NODE_TYPES = {
@@ -1394,6 +1511,7 @@ function getRequestHeader(event, name) {
 }
 
 const RawBodySymbol = Symbol.for("h3RawBody");
+const ParsedBodySymbol = Symbol.for("h3ParsedBody");
 const PayloadMethods$1 = ["PATCH", "POST", "PUT", "DELETE"];
 function readRawBody(event, encoding = "utf8") {
   assertMethod(event, PayloadMethods$1);
@@ -1455,6 +1573,26 @@ function readRawBody(event, encoding = "utf8") {
   const result = encoding ? promise.then((buff) => buff.toString(encoding)) : promise;
   return result;
 }
+async function readBody(event, options = {}) {
+  const request = event.node.req;
+  if (hasProp(request, ParsedBodySymbol)) {
+    return request[ParsedBodySymbol];
+  }
+  const contentType = request.headers["content-type"] || "";
+  const body = await readRawBody(event);
+  let parsed;
+  if (contentType === "application/json") {
+    parsed = _parseJSON(body, options.strict ?? true);
+  } else if (contentType.startsWith("application/x-www-form-urlencoded")) {
+    parsed = _parseURLEncodedBody(body);
+  } else if (contentType.startsWith("text/")) {
+    parsed = body;
+  } else {
+    parsed = _parseJSON(body, options.strict ?? false);
+  }
+  request[ParsedBodySymbol] = parsed;
+  return parsed;
+}
 function getRequestWebStream(event) {
   if (!PayloadMethods$1.includes(event.method)) {
     return;
@@ -1472,6 +1610,35 @@ function getRequestWebStream(event) {
       });
     }
   });
+}
+function _parseJSON(body = "", strict) {
+  if (!body) {
+    return void 0;
+  }
+  try {
+    return destr(body, { strict });
+  } catch {
+    throw createError$1({
+      statusCode: 400,
+      statusMessage: "Bad Request",
+      message: "Invalid JSON body"
+    });
+  }
+}
+function _parseURLEncodedBody(body) {
+  const form = new URLSearchParams(body);
+  const parsedForm = /* @__PURE__ */ Object.create(null);
+  for (const [key, value] of form.entries()) {
+    if (hasProp(parsedForm, key)) {
+      if (!Array.isArray(parsedForm[key])) {
+        parsedForm[key] = [parsedForm[key]];
+      }
+      parsedForm[key].push(value);
+    } else {
+      parsedForm[key] = value;
+    }
+  }
+  return parsedForm;
 }
 
 function handleCacheHeaders(event, opts) {
@@ -1526,6 +1693,33 @@ function sanitizeStatusCode(statusCode, defaultStatusCode = 200) {
     return defaultStatusCode;
   }
   return statusCode;
+}
+
+function parseCookies(event) {
+  return parse(event.node.req.headers.cookie || "");
+}
+function getCookie(event, name) {
+  return parseCookies(event)[name];
+}
+function setCookie(event, name, value, serializeOptions) {
+  const cookieStr = serialize(name, value, {
+    path: "/",
+    ...serializeOptions
+  });
+  let setCookies = event.node.res.getHeader("set-cookie");
+  if (!Array.isArray(setCookies)) {
+    setCookies = [setCookies];
+  }
+  setCookies = setCookies.filter((cookieValue) => {
+    return cookieValue && !cookieValue.startsWith(name + "=");
+  });
+  event.node.res.setHeader("set-cookie", [...setCookies, cookieStr]);
+}
+function deleteCookie(event, name, serializeOptions) {
+  setCookie(event, name, "", {
+    ...serializeOptions,
+    maxAge: 0
+  });
 }
 function splitCookiesString(cookiesString) {
   if (Array.isArray(cookiesString)) {
@@ -3059,7 +3253,7 @@ function klona(x) {
 
 const inlineAppConfig = {
   "nuxt": {
-    "buildId": "6b6c2423-8eb6-4e3b-a517-b27f80b92420"
+    "buildId": "99efa1ce-74c1-4698-8b22-22a3155b2555"
   }
 };
 
@@ -3079,6 +3273,9 @@ const _inlineRuntimeConfig = {
       "/__nuxt_error": {
         "cache": false
       },
+      "/confirm": {
+        "ssr": false
+      },
       "/_nuxt/builds/meta/**": {
         "headers": {
           "cache-control": "public, max-age=31536000, immutable"
@@ -3096,7 +3293,39 @@ const _inlineRuntimeConfig = {
       }
     }
   },
-  "public": {}
+  "public": {
+    "particles": {
+      "mode": "full",
+      "lazy": true
+    },
+    "supabase": {
+      "url": "https://yogvxczgatzxkidczkyy.supabase.co",
+      "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvZ3Z4Y3pnYXR6eGtpZGN6a3l5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwMzk4MzAxOSwiZXhwIjoyMDE5NTU5MDE5fQ.X8xbGxgOMHwd8hGP43O2YLG4I_kwhESx55UHqU7ilVQ",
+      "redirect": true,
+      "redirectOptions": {
+        "login": "/login",
+        "callback": "/confirm",
+        "exclude": []
+      },
+      "cookieName": "sb",
+      "cookieOptions": {
+        "maxAge": 28800,
+        "sameSite": "lax",
+        "secure": true
+      },
+      "clientOptions": {
+        "auth": {
+          "flowType": "pkce",
+          "detectSessionInUrl": true,
+          "persistSession": true,
+          "autoRefreshToken": true
+        }
+      }
+    }
+  },
+  "supabase": {
+    "serviceKey": ""
+  }
 };
 const ENV_PREFIX = "NITRO_";
 const ENV_PREFIX_ALT = _inlineRuntimeConfig.nitro.envPrefix ?? process.env.NITRO_ENV_PREFIX ?? "_";
@@ -3765,6 +3994,16 @@ function sha256base64(message) {
 function hash(object, options = {}) {
   const hashed = typeof object === "string" ? object : objectHash(object, options);
   return sha256base64(hashed).slice(0, 10);
+}
+
+function isEqual(object1, object2, hashOptions = {}) {
+  if (object1 === object2) {
+    return true;
+  }
+  if (objectHash(object1, hashOptions) === objectHash(object2, hashOptions)) {
+    return true;
+  }
+  return false;
 }
 
 function wrapToPromise(value) {
@@ -4466,7 +4705,7 @@ const storage = createStorage({});
 
 storage.mount('/assets', assets$1);
 
-storage.mount('data', unstorage_47drivers_47fs_45lite({"driver":"fsLite","base":"/home/gcrookes/personal-projects/nuxt/nuxt3/test/.data/kv"}));
+storage.mount('data', unstorage_47drivers_47fs_45lite({"driver":"fsLite","base":"/home/gcrookes/personal-projects/nuxt/personal-site/.data/kv"}));
 
 function useStorage(base = "") {
   return base ? prefixStorage(storage, base) : storage;
@@ -4941,129 +5180,213 @@ const errorHandler = (async function errorhandler(error, event) {
 const assets = {
   "/favicon.ico": {
     "type": "image/vnd.microsoft.icon",
-    "etag": "\"10be-n8egyE9tcb7sKGr/pYCaQ4uWqxI\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
-    "size": 4286,
+    "etag": "\"3c2e-zPY+vKZGCOuy/pWj75H9Xs7OafQ\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 15406,
     "path": "../public/favicon.ico"
+  },
+  "/_nuxt/BorderedBox.0ac3faf8.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"b2-wXimdDN3UsjOi+RNxK7W9VG9oYs\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 178,
+    "path": "../public/_nuxt/BorderedBox.0ac3faf8.css"
+  },
+  "/_nuxt/BorderedBox.vue.e69313b5.js": {
+    "type": "application/javascript",
+    "etag": "\"26a-/xaJs/YB3mb5J0Y+JFaFbyodlHA\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 618,
+    "path": "../public/_nuxt/BorderedBox.vue.e69313b5.js"
   },
   "/_nuxt/KFOkCnqEu92Fr1MmgVxIIzQ.34e9582c.woff": {
     "type": "font/woff",
     "etag": "\"4fd4-I8tjD0QkvL+zOQN3Z7KlTKMvbh4\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 20436,
     "path": "../public/_nuxt/KFOkCnqEu92Fr1MmgVxIIzQ.34e9582c.woff"
   },
   "/_nuxt/KFOlCnqEu92Fr1MmEU9fBBc-.9ce7f3ac.woff": {
     "type": "font/woff",
     "etag": "\"5040-Au3HeE6oCvwlgiTzy4yG3SM6rxk\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 20544,
     "path": "../public/_nuxt/KFOlCnqEu92Fr1MmEU9fBBc-.9ce7f3ac.woff"
   },
   "/_nuxt/KFOlCnqEu92Fr1MmSU5fBBc-.bf14c7d7.woff": {
     "type": "font/woff",
     "etag": "\"4fc0-Gc7FPDx8IEL3EGa3qS1sjX4ge9c\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 20416,
     "path": "../public/_nuxt/KFOlCnqEu92Fr1MmSU5fBBc-.bf14c7d7.woff"
   },
   "/_nuxt/KFOlCnqEu92Fr1MmWUlfBBc-.e0fd57c0.woff": {
     "type": "font/woff",
     "etag": "\"4fb8-a68sfMOgNnbBDOhy75+hqk4YWQE\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 20408,
     "path": "../public/_nuxt/KFOlCnqEu92Fr1MmWUlfBBc-.e0fd57c0.woff"
   },
   "/_nuxt/KFOlCnqEu92Fr1MmYUtfBBc-.f6537e32.woff": {
     "type": "font/woff",
     "etag": "\"4fc8-1KI7Ey4cqKbLTmeNUZ9q4AqKrFg\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 20424,
     "path": "../public/_nuxt/KFOlCnqEu92Fr1MmYUtfBBc-.f6537e32.woff"
   },
   "/_nuxt/KFOmCnqEu92Fr1Mu4mxM.f2abf7fb.woff": {
     "type": "font/woff",
     "etag": "\"4f78-2c/mtHe0nUe2JBtCgfSFjZjqymU\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 20344,
     "path": "../public/_nuxt/KFOmCnqEu92Fr1Mu4mxM.f2abf7fb.woff"
   },
-  "/_nuxt/_plugin-vue_export-helper.26f07da3.js": {
+  "/_nuxt/_plugin-vue_export-helper.c27b6911.js": {
     "type": "application/javascript",
-    "etag": "\"1d8-q1Agnn3yeGOd0klrwGnSvDdBCNQ\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
-    "size": 472,
-    "path": "../public/_nuxt/_plugin-vue_export-helper.26f07da3.js"
+    "etag": "\"5b-eFCz/UrraTh721pgAl0VxBNR1es\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 91,
+    "path": "../public/_nuxt/_plugin-vue_export-helper.c27b6911.js"
   },
-  "/_nuxt/entry.6b98aedf.js": {
+  "/_nuxt/browser.06aa05b2.js": {
     "type": "application/javascript",
-    "etag": "\"3eb90-2KTyfpzQsX2TbE9ewtyaSuSq09I\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
-    "size": 256912,
-    "path": "../public/_nuxt/entry.6b98aedf.js"
+    "etag": "\"276-6UVyGBZS1pvryfM5oyoujrPHp6A\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 630,
+    "path": "../public/_nuxt/browser.06aa05b2.js"
   },
-  "/_nuxt/error-404.323ff857.js": {
+  "/_nuxt/entry.36df233e.js": {
     "type": "application/javascript",
-    "etag": "\"1913-/oDPrQiNTFgVnLenqDEnLkCKCBg\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
-    "size": 6419,
-    "path": "../public/_nuxt/error-404.323ff857.js"
+    "etag": "\"73758-hi7n1nlFfYA1ldTghJi6d2cvwns\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 472920,
+    "path": "../public/_nuxt/entry.36df233e.js"
   },
   "/_nuxt/error-404.7fc72018.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"e2e-iNt1cqPQ0WDudfCTZVQd31BeRGs\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 3630,
     "path": "../public/_nuxt/error-404.7fc72018.css"
+  },
+  "/_nuxt/error-404.93ddadb8.js": {
+    "type": "application/javascript",
+    "etag": "\"905-cSOHvday1PymeZ+WTybckLtdNHA\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 2309,
+    "path": "../public/_nuxt/error-404.93ddadb8.js"
+  },
+  "/_nuxt/error-500.4b5950f6.js": {
+    "type": "application/javascript",
+    "etag": "\"7b3-LHZgrFmiKq3aBvnSmlHm+5HDQqc\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 1971,
+    "path": "../public/_nuxt/error-500.4b5950f6.js"
   },
   "/_nuxt/error-500.c5df6088.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"79e-ByRo+49BgcevWdRjJy3CMx2IA5k\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 1950,
     "path": "../public/_nuxt/error-500.c5df6088.css"
-  },
-  "/_nuxt/error-500.eb729eac.js": {
-    "type": "application/javascript",
-    "etag": "\"78b-WMEIMJaJjVKFHdfwtiJXmYrriK4\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
-    "size": 1931,
-    "path": "../public/_nuxt/error-500.eb729eac.js"
   },
   "/_nuxt/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.fd84f88b.woff": {
     "type": "font/woff",
     "etag": "\"28430-5Lt8HkDT/r7ljflj2ydrK/aMEXs\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 164912,
     "path": "../public/_nuxt/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.fd84f88b.woff"
   },
   "/_nuxt/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.4a4dbc62.woff2": {
     "type": "font/woff2",
     "etag": "\"1f668-qq6TsUbZdzf6voemvHQRE+aJmtM\"",
-    "mtime": "2023-12-16T22:50:39.109Z",
+    "mtime": "2023-12-31T22:30:21.772Z",
     "size": 128616,
     "path": "../public/_nuxt/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.4a4dbc62.woff2"
   },
+  "/_nuxt/index.3431ac80.js": {
+    "type": "application/javascript",
+    "etag": "\"6a98-00+QmB3FIPYBmzWDjkXrnXmoReU\"",
+    "mtime": "2023-12-31T22:30:21.772Z",
+    "size": 27288,
+    "path": "../public/_nuxt/index.3431ac80.js"
+  },
+  "/_nuxt/index.3b64ab12.js": {
+    "type": "application/javascript",
+    "etag": "\"22c-ymm3YRvlGl1RvSUwDolVbYjpryg\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 556,
+    "path": "../public/_nuxt/index.3b64ab12.js"
+  },
+  "/_nuxt/index.55c6691f.js": {
+    "type": "application/javascript",
+    "etag": "\"351a-q9qOesXZHFsvuRIXImKsUhIN3go\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 13594,
+    "path": "../public/_nuxt/index.55c6691f.js"
+  },
+  "/_nuxt/index.5d94b196.js": {
+    "type": "application/javascript",
+    "etag": "\"e1d-JU0kEtgMB7RLTIFdDD6x98agbPY\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 3613,
+    "path": "../public/_nuxt/index.5d94b196.js"
+  },
+  "/_nuxt/index.7222e2a2.js": {
+    "type": "application/javascript",
+    "etag": "\"467-BT5ev3EgeCit0QBSd5fx669gUxw\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 1127,
+    "path": "../public/_nuxt/index.7222e2a2.js"
+  },
+  "/_nuxt/index.7c31f9e3.js": {
+    "type": "application/javascript",
+    "etag": "\"d531-Hp2J7qZilqOK/Sf1akKoyO4C7Tg\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 54577,
+    "path": "../public/_nuxt/index.7c31f9e3.js"
+  },
+  "/_nuxt/index.7e10d0a9.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"9e-uwID76yrYK4/+rNIweB4UTbiCvc\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 158,
+    "path": "../public/_nuxt/index.7e10d0a9.css"
+  },
+  "/_nuxt/index.83c55e5b.js": {
+    "type": "application/javascript",
+    "etag": "\"e1-5G98381f2bQ5VWx8G3yTM5pyTf4\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 225,
+    "path": "../public/_nuxt/index.83c55e5b.js"
+  },
+  "/_nuxt/index.a1e8f821.js": {
+    "type": "application/javascript",
+    "etag": "\"10f-dtGnYpG9TLm2AL6mNv4usYNIAhs\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 271,
+    "path": "../public/_nuxt/index.a1e8f821.js"
+  },
+  "/_nuxt/vue.f36acd1f.0846e2eb.js": {
+    "type": "application/javascript",
+    "etag": "\"181-PzC9l8O6gLZUE+K3dF8ACtsYAfE\"",
+    "mtime": "2023-12-31T22:30:21.776Z",
+    "size": 385,
+    "path": "../public/_nuxt/vue.f36acd1f.0846e2eb.js"
+  },
   "/_nuxt/builds/latest.json": {
     "type": "application/json",
-    "etag": "\"47-YKGDCQBYEhsbOU7JX7Hj4SEQjyc\"",
-    "mtime": "2023-12-16T22:50:39.105Z",
+    "etag": "\"47-4PmrVFvj/6JBCDqWzlWArFB/qA8\"",
+    "mtime": "2023-12-31T22:30:21.768Z",
     "size": 71,
     "path": "../public/_nuxt/builds/latest.json"
   },
-  "/_nuxt/builds/meta/6b6c2423-8eb6-4e3b-a517-b27f80b92420.json": {
+  "/_nuxt/builds/meta/99efa1ce-74c1-4698-8b22-22a3155b2555.json": {
     "type": "application/json",
-    "etag": "\"8b-DuKSkWEMc6WAIQw8SemH8Pyp+2k\"",
-    "mtime": "2023-12-16T22:50:39.105Z",
+    "etag": "\"8b-StFNo1CR0wd0z9C/E3ygTV6NTY0\"",
+    "mtime": "2023-12-31T22:30:21.768Z",
     "size": 139,
-    "path": "../public/_nuxt/builds/meta/6b6c2423-8eb6-4e3b-a517-b27f80b92420.json"
-  },
-  "/_nuxt/builds/meta/dev.json": {
-    "type": "application/json",
-    "etag": "\"6a-v9PVp4mjiNlxrIRkD/iiEMEp8ig\"",
-    "mtime": "2023-12-16T22:50:39.105Z",
-    "size": 106,
-    "path": "../public/_nuxt/builds/meta/dev.json"
+    "path": "../public/_nuxt/builds/meta/99efa1ce-74c1-4698-8b22-22a3155b2555.json"
   }
 };
 
@@ -5259,12 +5582,14 @@ const _f4b49z = eventHandler((event) => {
   return readAsset(id);
 });
 
-const _lazy_0q3qqg = () => import('../handlers/renderer.mjs').then(function (n) { return n.r; });
+const _lazy_84tT3A = () => import('../saveMessage.post.mjs');
+const _lazy_CAC636 = () => import('../handlers/renderer.mjs').then(function (n) { return n.r; });
 
 const handlers = [
   { route: '', handler: _f4b49z, lazy: false, middleware: true, method: undefined },
-  { route: '/__nuxt_error', handler: _lazy_0q3qqg, lazy: true, middleware: false, method: undefined },
-  { route: '/**', handler: _lazy_0q3qqg, lazy: true, middleware: false, method: undefined }
+  { route: '/api/saveMessage', handler: _lazy_84tT3A, lazy: true, middleware: false, method: "post" },
+  { route: '/__nuxt_error', handler: _lazy_CAC636, lazy: true, middleware: false, method: undefined },
+  { route: '/**', handler: _lazy_CAC636, lazy: true, middleware: false, method: undefined }
 ];
 
 function createNitroApp() {
@@ -5638,5 +5963,5 @@ trapUnhandledNodeErrors();
 setupGracefulShutdown(listener, nitroApp);
 const nodeServer = {};
 
-export { $fetch as $, send as a, setResponseStatus as b, setResponseHeaders as c, useRuntimeConfig as d, eventHandler as e, getQuery as f, getResponseStatus as g, createError$1 as h, getRouteRules as i, joinURL as j, getResponseStatusText as k, hasProtocol as l, isScriptProtocol as m, sanitizeStatusCode as n, createHooks as o, parseURL as p, isEqual as q, stringifyParsedURL as r, setResponseHeader as s, stringifyQuery as t, useNitroApp as u, parseQuery as v, withQuery as w, withTrailingSlash as x, withoutTrailingSlash as y, nodeServer as z };
+export { $fetch as $, destr as A, isEqual as B, setCookie as C, getCookie as D, deleteCookie as E, nodeServer as F, send as a, setResponseStatus as b, setResponseHeaders as c, useRuntimeConfig as d, eventHandler as e, getQuery as f, getResponseStatus as g, createError$1 as h, getRouteRules as i, joinURL as j, getResponseStatusText as k, defu as l, hasProtocol as m, parseQuery as n, createHooks as o, parseURL as p, withoutTrailingSlash as q, readBody as r, setResponseHeader as s, withQuery as t, useNitroApp as u, isScriptProtocol as v, withTrailingSlash as w, sanitizeStatusCode as x, parse as y, getRequestHeader as z };
 //# sourceMappingURL=node-server.mjs.map

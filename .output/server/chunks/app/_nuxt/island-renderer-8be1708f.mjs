@@ -9,6 +9,8 @@ import 'node:fs';
 import 'node:url';
 import 'unhead';
 import '@unhead/shared';
+import 'vue-router';
+import '@supabase/supabase-js';
 import 'quasar/lang/en-US.mjs';
 import 'quasar/icon-set/material-icons.mjs';
 import 'vue/server-renderer';
@@ -41,4 +43,4 @@ const islandRenderer = defineComponent({
 });
 
 export { islandRenderer as default };
-//# sourceMappingURL=island-renderer-8a059ee1.mjs.map
+//# sourceMappingURL=island-renderer-8be1708f.mjs.map
