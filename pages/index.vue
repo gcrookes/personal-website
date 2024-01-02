@@ -13,6 +13,12 @@
                 Full Stack Developer
             </div>
         </div>
+        <div class="mt-8 mb-8">
+            <IconBox title="About" icon="import_contacts" description="I am a full stack web developer who can deliver results across the project" />
+            <IconBox title="Projects" icon="architecture" description="Check out my side projects, and what I have been working on lately" />
+            <IconBox title="Contact Me" icon="contact_mail" description="Feel free to reach out for an inquiries or to hire me" />
+            <IconBox title="Get CV" icon="picture_as_pdf" description="Download a PDF copy of my resume" />
+        </div>
     </div>
 </template>
 
