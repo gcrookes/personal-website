@@ -17,7 +17,7 @@ export default eventHandler(async (event) => {
     }
 
     const client = await serverSupabaseClient<Database>(event)
-    const { data, error } = await client
+    const { error } = await client
         .from('MESSAGES')
         .insert([{
             sender_name: body.name,
@@ -25,12 +25,12 @@ export default eventHandler(async (event) => {
             sender_message: body.message,
         }
         ])
-        .select()
     if (error !== null) {
+        console.log(error)
         setResponseStatus(event, 500)
         return { message: 'Failed to save Message' }
     } else {
         setResponseStatus(event, 200)
-        return data
+        return body
     }
 });
