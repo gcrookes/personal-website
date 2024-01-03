@@ -28,7 +28,7 @@ export default eventHandler(async (event) => {
         .select()
     if (error !== null) {
         setResponseStatus(event, 500)
-        return { message: 'Unable to save to database' }
+        return { message: 'Failed to save Message' }
     } else {
         setResponseStatus(event, 200)
         return data
