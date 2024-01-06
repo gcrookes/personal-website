@@ -3,14 +3,19 @@
     class="bg-zinc-900/75 relative-position mt-8 font-white border-primary border-2 rounded-md p-2 body-border max-w-3xl"
   >
     <div
-      class="absolute text-2xl p-2 mx-2 rounded-2 top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-xl bg-slate-900"
+      class="absolute text-2xl p-2 mx-2 rounded-2 top-0 left-1/2 transform -translate-x-[52%] -translate-y-1/2 rounded-xl bg-slate-900"
     >
       <div class="bg-zinc-900/75 max-w-[70vw] ellipsis px-4 border-2 rounded-md">
         {{ title }}
       </div>
     </div>
     <div class="text-lg px-4 pt-4 text-center">
-      {{ body }}
+        <div v-if="body" >
+          {{ body }}
+        </div>
+        <div>
+            <slot />
+        </div>
     </div>
   </div>
 </template>

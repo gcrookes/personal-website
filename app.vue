@@ -6,7 +6,7 @@
           <q-toolbar-title class="font-bold text-3xl">
             GARNET CROOKES
           </q-toolbar-title>
-          <q-tabs v-if="$q.screen.gt.xs" v-model="tab" shrink>
+          <q-tabs v-if="$q.screen.gt.sm" v-model="tab" shrink>
             <q-route-tab class="rounded-lg" to="/" name="home" label="Home" />
             <q-route-tab class="rounded-lg" to="/about" name="about" label="About" />
             <q-route-tab class="rounded-lg" to="/projects" name="projects" label="Projects" />
