@@ -3,8 +3,8 @@
     <NuxtLayout>
       <header class="sticky top-0 left-0 w-full bg-slate-900 px-2" style="z-index: 3">
         <q-toolbar class="text-white">
-          <q-toolbar-title class="font-bold text-3xl">
-            GARNET CROOKES
+          <q-toolbar-title to="/" class="font-bold text-3xl">
+            <NuxtLink to="/">GARNET CROOKES</NuxtLink>
           </q-toolbar-title>
           <q-tabs v-if="$q.screen.gt.sm" v-model="tab" shrink>
             <q-route-tab class="rounded-lg" to="/" name="home" label="Home" />
