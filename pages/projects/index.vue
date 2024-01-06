@@ -47,6 +47,16 @@
 }
 const projects = [
   {
+    title: "Rotary Control",
+    body: "Developed a control system to adjust pull behind Ag equipment using computer vision. Leveraged hardware in loop simulation to test the system using unity simulations. MEng Capstone Project. Thanks for the support and collaboration of MacDon Industries.",
+    logos: [
+        { name: "python", link: "https://www.python.org/" },
+        { name: "opencv", link: "https://opencv.org/" },
+        { name: "unity", link: "https://unity.com/products/unity-engine" },
+        { name: "ros", link: "https://www.ros.org/" },
+    ],
+  },
+  {
     title: "EOG Mouse Control",
     body: "A microproccesor based system to control a computer mouse using brainwaves. For the NatHacks Hackathon",
     bullets: [
