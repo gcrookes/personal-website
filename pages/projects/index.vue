@@ -23,15 +23,15 @@
                     </a>
                 </div>
             </div>
-            <div class="row q-gutter-x-sm absolute -top-4 right-4">
-                <a v-if="info.youtube" :href="info.youtube" target="_blank">
-                    <div class="bg-zinc-800 border-white border-2 content-center row rounded-lg h-8 w-8 p-0.5">
-                        <img src="/logos/youtube.png" title="Github" alt="Link to demo on Youtube" class="max-h-full max-w-full">
-                    </div>
-                </a>
+            <div class="column q-gutter-y-sm absolute top-2 -right-4">
                 <a v-if="info.github" :href="info.github" target="_blank">
                     <div class="bg-zinc-800 border-white border-2 rounded-lg h-8 w-8 p-0.5">
                         <img src="/logos/github-mark-white.png" title="Github" alt="Link to source code on Github" class="max-h-full max-w-full">
+                    </div>
+                </a>
+                <a v-if="info.youtube" :href="info.youtube" target="_blank">
+                    <div class="bg-zinc-800 border-white border-2 content-center row rounded-lg h-8 w-8 p-0.5">
+                        <img src="/logos/youtube.png" title="Github" alt="Link to demo on Youtube" class="max-h-full max-w-full">
                     </div>
                 </a>
             </div>
