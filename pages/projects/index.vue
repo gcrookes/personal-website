@@ -15,8 +15,12 @@
                 Built Using:
             </div>
             <div class="row q-gutter-md justify-center">
-                <div v-for="logo in info.logos" class="col-xl-2 col-lg-2 col-md-2 col-sm-2 col-5 max-h-12 min-h-12 bg-white flex justify-center rounded-lg p-0.5 border-2 border-green-400" :key="logo">
-                    <img :src="`/logos/${logo}.png`" :title="logo" :alt="logo" class="max-h-full max-w-full">
+                <div v-for="{ name: logo, link } in info.logos" class="col-xl-2 col-lg-2 col-md-2 col-sm-2 col-5" :key="logo">
+                    <a :href="link" target="_blank">
+                        <div class="bg-white rounded-lg p-0.5 border-2 border-green-400 h-12 min-w-12 max-h-12 flex justify-center">
+                            <img :src="`/logos/${logo}.png`" :title="logo" :alt="logo" class="max-h-full max-w-full">
+                        </div>
+                    </a>
                 </div>
             </div>
         </BorderedBox>
@@ -37,7 +41,12 @@ const projects = [
         "Frontend implemented using React, users can login or use the site as a guest",
         "Backend implemented in Spring Boot, with data stored on a MySQL database",
     ],
-    logos: ["javascript", "react", "springboot", "mysql"]
+    logos: [
+        { name: "javascript", link: "https://www.javascript.com/" },
+        { name: "react", link: "https://react.dev/" },
+        { name: "springboot", link: "https://spring.io/projects/spring-boot/" },
+        { name: "mysql", link: "https://www.mysql.com/" },
+    ],
   },
   {
     title: "EOG Mouse Control",
@@ -47,7 +56,12 @@ const projects = [
         "Captured and filtered data from multiple EXG Pill sensors on an Arduino",
         "Used serial communication to transmit data between Arduino and computer",
     ],
-    logos: ["python", "tensorflow", "arduino", "exg"]
+    logos: [
+        { name: "python", link: "https://www.python.org/" },
+        { name: "tensorflow", link: "https://www.tensorflow.org/" },
+        { name: "arduino", link: "https://www.arduino.cc/" },
+        { name: "exg", link: "https://store.upsidedownlabs.tech/product/bioamp-exg-pill/" },
+    ],
   },
 ];
 </script>
