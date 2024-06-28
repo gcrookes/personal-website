@@ -1,1 +1,0 @@
-import{_ as e}from"./_plugin-vue_export-helper.c27b6911.js";import{o as c,c as o}from"./entry.36df233e.js";const r={};function t(n,s){return c(),o("div",null,"Projects Page")}const f=e(r,[["render",t]]);export{f as default};

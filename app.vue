@@ -11,6 +11,7 @@
             <q-route-tab class="rounded-lg" to="/about" name="about" label="About" />
             <q-route-tab class="rounded-lg" to="/projects" name="projects" label="Projects" />
             <q-route-tab class="rounded-lg" to="/contact" name="contact" label="Contact" />
+            <q-route-tab v-if="route.path.startsWith('/fitness')" class="rounded-lg" to="/fitness" name="Fitness" label="Fitness" />
           </q-tabs>
           <q-btn v-else flat round dense icon="menu">
             <q-menu
