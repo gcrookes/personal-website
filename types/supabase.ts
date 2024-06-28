@@ -9,6 +9,38 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      FT_EXERCISES: {
+        Row: {
+          created_at: string
+          id: string
+          soft_delete: boolean | null
+          weight: number | null
+          workout: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          soft_delete?: boolean | null
+          weight?: number | null
+          workout?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          soft_delete?: boolean | null
+          weight?: number | null
+          workout?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "FT_EXERCISES_workout_fkey"
+            columns: ["workout"]
+            isOneToOne: false
+            referencedRelation: "FT_WORKOUTS"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       FT_WORKOUT_TYPES: {
         Row: {
           created_at: string
@@ -29,6 +61,41 @@ export type Database = {
           soft_delete?: boolean | null
         }
         Relationships: []
+      }
+      FT_WORKOUTS: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          soft_delete: boolean
+          start_time: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          soft_delete?: boolean
+          start_time?: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          soft_delete?: boolean
+          start_time?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ft_workouts_type_fkey"
+            columns: ["type"]
+            isOneToOne: false
+            referencedRelation: "FT_WORKOUT_TYPES"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       MESSAGES: {
         Row: {

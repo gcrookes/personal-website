@@ -3,10 +3,11 @@ import { Database } from "~/types/supabase";
 
 export default eventHandler(async (event) => {
   const type = event.context.params?.type;
-  console.log(type);
   if (!type) {
-    setResponseStatus(event, 400);
-    return { message: "Must select a workout type" };
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Must select a workout type",
+    });
   }
 
   const supabase = serverSupabaseServiceRole<Database>(event);
@@ -18,8 +19,10 @@ export default eventHandler(async (event) => {
     .eq("soft_delete", false);
 
   if (typeResult && typeResult.length === 0) {
-    setResponseStatus(event, 400);
-    return { message: "Workout Type doesn't exist" };
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Workout Type doesn't exist",
+    });
   }
 
   const { data, error } = await supabase
@@ -28,13 +31,14 @@ export default eventHandler(async (event) => {
     .select()
     .single();
 
-  console.log(data);
   if (error !== null) {
     console.log(error);
-    setResponseStatus(event, 500);
-    return;
-  } else {
-    setResponseStatus(event, 200);
-    return data;
+    throw createError({
+      statusCode: 500,
+      statusMessage: error.message,
+    });
   }
+
+  setResponseStatus(event, 200);
+  return data;
 });

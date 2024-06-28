@@ -5,7 +5,7 @@ export default eventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event);
   const { data, error } = await supabase
     .from("FT_WORKOUTS")
-    .select("*")
+    .select("*, type (id, name)")
     .eq("soft_delete", false);
 
   if (error !== null) {

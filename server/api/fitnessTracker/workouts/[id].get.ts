@@ -1,8 +1,12 @@
 import { serverSupabaseServiceRole } from "#supabase/server";
+import {
+  getParamThrowIfEmpty,
+  throwErrorIfExists,
+} from "~/server/utils/paramUtils";
 import { Database } from "~/types/supabase";
 
 export default eventHandler(async (event) => {
-  const id = event.context.params?.id;
+  const id = getParamThrowIfEmpty(event, "id");
   const supabase = serverSupabaseServiceRole<Database>(event);
   const { data, error } = await supabase
     .from("FT_WORKOUTS")
@@ -11,12 +15,15 @@ export default eventHandler(async (event) => {
     .eq("soft_delete", false)
     .single();
 
-  if (error !== null) {
-    console.log(error);
-    setResponseStatus(event, 500);
-    return;
-  } else {
-    setResponseStatus(event, 200);
-    return data;
-  }
+  const { data: exercises, error: exerciseError } = await supabase
+    .from("FT_EXERCISES")
+    .select("id, weight")
+    .eq("workout", id)
+    .eq("soft_delete", false);
+
+  throwErrorIfExists(error);
+  throwErrorIfExists(exerciseError);
+
+  setResponseStatus(event, 200);
+  return { ...data, exercises };
 });

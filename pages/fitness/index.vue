@@ -11,13 +11,39 @@
         />
       </div>
     </BorderedBox>
-    <div v-for="workout in data">
-      {{ workout.id }}
+    <div class="flex column gap-2 mt-2">
+      <NuxtLink
+        v-for="workout in data"
+        class="border border-white rounded-md tw-min-w-[40rem]"
+        :to="`/fitness/workout/${workout.id}`"
+      >
+        <div>
+          {{ workout.type.name }}
+        </div>
+        <div>
+          {{ workout.start_time }}
+        </div>
+        <div>
+          {{ workout.end_time }}
+        </div>
+        <q-btn
+          icon="close"
+          color="red"
+          flat
+          dense
+          @mousedown="deleteWorkout(workout.id)"
+        />
+      </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+const { data: workoutTypes } = await useFetch(
+  "/api/fitnessTracker/workoutTypes"
+);
+const { data, refresh } = await useFetch("/api/fitnessTracker/workouts");
+
 const startWorkout = async (type: string) => {
   const { data: workout, error } = await useFetch(
     `/api/fitnessTracker/startWorkout/${type}`,
@@ -28,13 +54,20 @@ const startWorkout = async (type: string) => {
   );
   if (error && error.value) {
     fail(error.value.data.message);
+    return;
   }
-  console.log(workout);
-  await navigateTo("/fitness/workout/" + workout.value.id);
+  if (!!workout.value) await navigateTo("/fitness/workout/" + workout.value.id);
 };
-
-const { data: workoutTypes } = await useFetch(
-  "/api/fitnessTracker/workoutTypes"
-);
-const { data } = await useFetch("/api/fitnessTracker/workouts");
+const deleteWorkout = async (workoutId: string) => {
+  const { error } = await useFetch(
+    `/api/fitnessTracker/workouts/${workoutId}`,
+    {
+      method: "delete",
+    }
+  );
+  if (error && error.value) {
+    fail(error.value.data.message);
+  }
+  await refresh();
+};
 </script>
