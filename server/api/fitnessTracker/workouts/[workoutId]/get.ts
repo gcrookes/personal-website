@@ -6,7 +6,7 @@ import {
 import { Database } from "~/types/supabase";
 
 export default eventHandler(async (event) => {
-  const id = getParamThrowIfEmpty(event, "id");
+  const id = getParamThrowIfEmpty(event, "workoutId");
   const supabase = serverSupabaseServiceRole<Database>(event);
   const { data, error } = await supabase
     .from("FT_WORKOUTS")
