@@ -11,29 +11,30 @@
         />
       </div>
     </BorderedBox>
-    <div class="flex column gap-2 mt-2">
-      <NuxtLink
-        v-for="workout in data"
-        class="border border-white rounded-md tw-min-w-[40rem]"
-        :to="`/fitness/workout/${workout.id}`"
+    <div v-for="workout in data" class="flex column gap-2 mt-2">
+      <div
+        class="row border border-white rounded-md tw-min-w-[40rem] justify-between"
       >
-        <div>
-          {{ workout.type.name }}
-        </div>
-        <div>
-          {{ workout.start_time }}
-        </div>
-        <div>
-          {{ workout.end_time }}
-        </div>
+        <NuxtLink class="col-11" :to="`/fitness/workout/${workout.id}`">
+          <div>
+            {{ workout.type.name }}
+          </div>
+          <div>
+            {{ workout.start_time }}
+          </div>
+          <div>
+            {{ workout.end_time }}
+          </div>
+        </NuxtLink>
         <q-btn
+          class="col-1"
           icon="close"
           color="red"
           flat
           dense
-          @mousedown="deleteWorkout(workout.id)"
+          @click.stop="deleteWorkout(workout.id)"
         />
-      </NuxtLink>
+      </div>
     </div>
   </div>
 </template>

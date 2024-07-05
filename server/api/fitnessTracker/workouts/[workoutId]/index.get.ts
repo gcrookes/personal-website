@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from "#supabase/server";
+import { stringifyQuery } from "vue-router";
 import {
   getParamThrowIfEmpty,
   throwErrorIfExists,
@@ -14,16 +15,36 @@ export default eventHandler(async (event) => {
     .eq("id", id)
     .eq("soft_delete", false)
     .single();
+  throwErrorIfExists(error);
 
   const { data: exercises, error: exerciseError } = await supabase
     .from("FT_EXERCISES")
-    .select("id, weight")
+    .select("id, name, weight")
     .eq("workout", id)
     .eq("soft_delete", false);
-
-  throwErrorIfExists(error);
   throwErrorIfExists(exerciseError);
 
+  const updatedExercises = exercises?.map((exercise) => {
+    return {
+      ...exercise,
+      sets: [] as any[],
+    };
+  });
+
+  if (!!exercises) {
+    var excerciseIds = exercises?.map((exercise) => exercise.id);
+    const { data: sets, error: setError } = await supabase
+      .from("FT_SETS")
+      .select("id, weight, reps, exercise")
+      .in("exercise", excerciseIds)
+      .eq("soft_delete", false);
+
+    throwErrorIfExists(setError);
+    updatedExercises?.forEach((exercise) => {
+      exercise.sets = sets?.filter((set) => set.exercise === exercise.id) ?? [];
+    });
+  }
+
   setResponseStatus(event, 200);
-  return { ...data, exercises };
+  return { ...data, exercises: updatedExercises };
 });
