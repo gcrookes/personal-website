@@ -7,11 +7,11 @@
       </div>
     </BorderedBox>
     <div class="column px-4 py-2 gap-y-2 content-center">
-      <div v-for="excercise in workout.exercises" :key="excercise.id">
+      <div v-for="exercise in workout.exercises" :key="exercise.id">
         <div
           class="row border-primary border-2 rounded-lg justify-between mx-4"
         >
-          <div>{{ excercise.name }}: {{ excercise.weight }} lb</div>
+          <div>{{ exercise.name }}: {{ exercise.weight }} lb</div>
           <div>
             <q-btn
               class="col-1"
@@ -19,16 +19,29 @@
               color="red"
               flat
               dense
-              @click.stop="deleteExcercise(excercise.id)"
+              @click.stop="deleteexercise(exercise.id)"
             />
           </div>
         </div>
-        <RepCounter v-for="set in excercise.sets" :key="set.id" :set="set">
-        </RepCounter>
+        <div class="row q-gutter-x-md pl-8">
+          <RepCounter v-for="set in exercise.sets" :key="set.id" :set="set" />
+          <q-btn
+            icon="add"
+            class="text-white px-1 mb-auto mt-10 ml-4"
+            color="white"
+            outline
+            rounded
+            @click="handleAddSet(exercise.id)"
+          />
+        </div>
       </div>
-      <q-form ref="excerciseForm" class="row gap-x-2" @submit="addExercise">
+      <q-form
+        ref="exerciseForm"
+        class="row gap-x-2 items-center"
+        @submit="addExercise"
+      >
         <q-input
-          v-model="newExcercise.name"
+          v-model="newexercise.name"
           label="Name"
           class="col"
           dense
@@ -37,7 +50,7 @@
           :rules.lazy="[(val) => !!val || 'Required']"
         />
         <q-input
-          v-model="newExcercise.weight"
+          v-model="newexercise.weight"
           type="number"
           label="Weight"
           class="col-3"
@@ -46,7 +59,14 @@
           dark
           :rules.lazy="[(val) => !!val || val > 0 || 'Must be greater than 0']"
         />
-        <q-btn label="New Excercise" class="col-4" type="submit" />
+        <q-btn
+          icon="add"
+          class="col-auto mb-auto mt-1"
+          type="submit"
+          outline
+          dense
+          rounded
+        />
       </q-form>
     </div>
   </div>
@@ -57,11 +77,11 @@ import type { QForm } from "quasar";
 import BorderedBox from "~/components/BorderedBox.vue";
 import RepCounter from "~/components/RepCounter.vue";
 
-const newExcercise = ref<{ name: string; weight: number }>({
+const newexercise = ref<{ name: string; weight: number }>({
   name: "",
   weight: 0,
 });
-const excerciseForm = ref<QForm>();
+const exerciseForm = ref<QForm>();
 
 const route = useRoute();
 const routeWorkoutId = computed(() =>
@@ -74,10 +94,10 @@ const { data: workout, refresh } = await useFetch(
 
 const addExercise = async () => {
   const { data, error } = await useFetch(
-    `/api/fitnessTracker/workouts/${routeWorkoutId.value}/excercise`,
+    `/api/fitnessTracker/workouts/${routeWorkoutId.value}/exercise`,
     {
       method: "post",
-      body: newExcercise.value,
+      body: newexercise.value,
     }
   );
   if (error && error.value) {
@@ -85,15 +105,28 @@ const addExercise = async () => {
     return;
   }
   await refresh();
-  newExcercise.value = { name: "", weight: 0 };
-  excerciseForm.value?.reset();
+  newexercise.value = { name: "", weight: 0 };
+  exerciseForm.value?.reset();
 };
 
-const deleteExcercise = async (excerciseId: string) => {
+const deleteexercise = async (exerciseId: string) => {
   const { error } = await useFetch(
-    `/api/fitnessTracker/workouts/${routeWorkoutId.value}/excercise/${excerciseId}`,
+    `/api/fitnessTracker/workouts/${routeWorkoutId.value}/exercise/${exerciseId}`,
     {
       method: "delete",
+    }
+  );
+  if (error && error.value) {
+    fail(error.value.data.message);
+  }
+  await refresh();
+};
+
+const handleAddSet = async (exerciseId: string) => {
+  const { error } = await useFetch(
+    `/api/fitnessTracker/workouts/${routeWorkoutId.value}/exercise/${exerciseId}/set`,
+    {
+      method: "post",
     }
   );
   if (error && error.value) {

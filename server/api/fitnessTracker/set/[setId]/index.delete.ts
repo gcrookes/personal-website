@@ -6,15 +6,18 @@ import {
 import { Database } from "~/types/supabase";
 
 export default eventHandler(async (event) => {
-  const excerciseId = getParamThrowIfEmpty(event, "excerciseId");
-
+  const setId = getParamThrowIfEmpty(event, "setId");
   const supabase = serverSupabaseServiceRole<Database>(event);
-  const { data, error } = await supabase
-    .from("FT_EXERCISES")
-    .update({ soft_delete: true })
-    .eq("id", excerciseId);
 
-  throwErrorIfExists(error);
-  setResponseStatus(event, 204);
-  return data;
+  const { data: set, error: exerciseError } = await supabase
+    .from("FT_SETS")
+    .update({ soft_delete: true })
+    .eq("id", setId)
+    .eq("soft_delete", false)
+    .select()
+    .single();
+
+  throwErrorIfExists(exerciseError);
+  setResponseStatus(event, 200);
+  return set;
 });

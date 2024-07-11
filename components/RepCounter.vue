@@ -1,5 +1,5 @@
 <template>
-  <div class="column content-center w-min">
+  <div v-if="!deleted" class="column content-center w-min">
     <q-btn
       icon="keyboard_arrow_up"
       class="text-white"
@@ -12,9 +12,9 @@
       {{ set.reps }}
     </div>
     <q-btn
-      icon="keyboard_arrow_down"
+      :icon="set.reps === 1 ? 'close' : 'keyboard_arrow_down'"
       class="text-white"
-      color="white"
+      :color="set.reps === 1 ? 'red' : 'white'"
       flat
       dense
       @click="handleDecreaseReps"
@@ -30,15 +30,50 @@ interface ISet {
   reps: number;
 }
 
+const deleted = ref(false);
+
 const props = defineProps({
   set: { type: Object as PropType<ISet>, default: () => {} },
 });
 
-const handleIncreaseReps = () => {
-  props.set.reps++;
+const handleIncreaseReps = async () => {
+  setReps(props.set.reps + 1);
 };
+
 const handleDecreaseReps = () => {
-  if (props.set.reps <= 0) return;
-  props.set.reps--;
+  if (props.set.reps === 1) {
+    deleted.value = true;
+    deleteSet();
+    return;
+  }
+  if (props.set.reps <= 1) return;
+  setReps(props.set.reps - 1);
+};
+
+const setReps = async (newReps: number) => {
+  const body = { reps: newReps };
+  const { data, error } = await useFetch(
+    `/api/fitnessTracker/set/${props.set.id}/reps`,
+    {
+      method: "patch",
+      body,
+    }
+  );
+  if (error && error.value) {
+    fail(error.value.data.message);
+    return;
+  }
+  props.set.reps = data.value.reps;
+};
+
+const deleteSet = async () => {
+  const { error } = await useFetch(`/api/fitnessTracker/set/${props.set.id}`, {
+    method: "delete",
+  });
+  if (error && error.value) {
+    fail(error.value.data.message);
+    return;
+  }
+  props.set.reps = 0;
 };
 </script>

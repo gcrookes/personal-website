@@ -21,7 +21,8 @@ export default eventHandler(async (event) => {
     .from("FT_EXERCISES")
     .select("id, name, weight")
     .eq("workout", id)
-    .eq("soft_delete", false);
+    .eq("soft_delete", false)
+    .order("created_at");
   throwErrorIfExists(exerciseError);
 
   const updatedExercises = exercises?.map((exercise) => {
@@ -32,12 +33,13 @@ export default eventHandler(async (event) => {
   });
 
   if (!!exercises) {
-    var excerciseIds = exercises?.map((exercise) => exercise.id);
+    var exerciseIds = exercises?.map((exercise) => exercise.id);
     const { data: sets, error: setError } = await supabase
       .from("FT_SETS")
       .select("id, weight, reps, exercise")
-      .in("exercise", excerciseIds)
-      .eq("soft_delete", false);
+      .in("exercise", exerciseIds)
+      .eq("soft_delete", false)
+      .order("created_at");
 
     throwErrorIfExists(setError);
     updatedExercises?.forEach((exercise) => {
