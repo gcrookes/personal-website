@@ -17,6 +17,14 @@ export default eventHandler(async (event) => {
     .single();
 
   throwErrorIfExists(error);
+  if (data != null) {
+    const { data: sets } = await supabase
+      .from("FT_SETS")
+      .insert([{ weight: body.weight, reps: 10, exercise: data?.id }])
+      .select()
+      .single();
+    data.sets = sets;
+  }
 
   setResponseStatus(event, 200);
   return data;
