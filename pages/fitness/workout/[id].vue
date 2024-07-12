@@ -1,5 +1,22 @@
 <template>
   <div v-if="workout">
+    <div class="row justify-between">
+      <q-btn
+        label="back"
+        icon="arrow_back"
+        class="text-white"
+        size="lg"
+        to="/fitness"
+      />
+      <q-btn
+        v-if="!workout.end_time"
+        label="end"
+        icon-right="check"
+        class="text-white"
+        size="lg"
+        @click="handleEndWorkout"
+      />
+    </div>
     <BorderedBox :title="workout.type?.name" :max-width="''">
       <div class="row full-width text-left">
         <div class="col-6">Start Time: {{ workout.start_time }}</div>
@@ -133,5 +150,18 @@ const handleAddSet = async (exerciseId: string) => {
     fail(error.value.data.message);
   }
   await refresh();
+};
+
+const handleEndWorkout = async () => {
+  const { error } = await useFetch(
+    `/api/fitnessTracker/workouts/${routeWorkoutId.value}/endWorkout`,
+    {
+      method: "post",
+    }
+  );
+  if (error && error.value) {
+    fail(error.value.data.message);
+  }
+  await navigateTo("/fitness");
 };
 </script>
