@@ -7,7 +7,7 @@ export default eventHandler(async (event) => {
     .from("FT_WORKOUTS")
     .select("*, type (id, name)")
     .eq("soft_delete", false)
-    .order("start_time");
+    .order("start_time", { ascending: false });
 
   if (error !== null) {
     console.log(error);

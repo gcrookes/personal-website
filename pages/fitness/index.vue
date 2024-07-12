@@ -1,8 +1,8 @@
 <template>
-  <div class="text-center">
+  <div class="text-center q-mx-sm">
     <div class="text-4xl q-pb-md">Fitness Tracker</div>
     <BorderedBox title="Start a New Workout">
-      <div class="min-w-[20rem] flex justify-between q-px-sm">
+      <div class="min-w-[18rem] flex justify-between q-px-sm">
         <q-btn
           v-for="workout in workoutTypes"
           :label="workout.name"
@@ -11,35 +11,29 @@
         />
       </div>
     </BorderedBox>
-    <div v-for="workout in data" class="flex column gap-2 mt-2">
-      <div
-        class="row border border-white rounded-md tw-min-w-[40rem] justify-between"
-      >
-        <NuxtLink class="col-11" :to="`/fitness/workout/${workout.id}`">
-          <div>
-            {{ workout.type.name }}
-          </div>
-          <div>
-            {{ workout.start_time }}
-          </div>
-          <div>
-            {{ workout.end_time }}
-          </div>
-        </NuxtLink>
-        <q-btn
-          class="col-1"
-          icon="close"
-          color="red"
-          flat
-          dense
-          @click.stop="deleteWorkout(workout.id)"
-        />
-      </div>
-    </div>
+    <BorderedBox title="Active Workouts">
+      <WorkoutSummary
+        v-for="workout in data"
+        :workout="workout"
+        :key="workout.id"
+        active
+        @delete="deleteWorkout"
+      />
+    </BorderedBox>
+    <BorderedBox title="Past Workouts">
+      <WorkoutSummary
+        v-for="workout in data"
+        :workout="workout"
+        :key="workout.id"
+        @delete="deleteWorkout"
+      />
+    </BorderedBox>
   </div>
 </template>
 
 <script setup lang="ts">
+import WorkoutSummary from "~/components/FitnessTracker/WorkoutSummary.vue";
+
 const { data: workoutTypes } = await useFetch(
   "/api/fitnessTracker/workoutTypes"
 );
