@@ -19,8 +19,20 @@
     </div>
     <BorderedBox :title="workout.type?.name" :max-width="''">
       <div class="row full-width text-left">
-        <div class="col-6">Start Time: {{ workout.start_time }}</div>
-        <div class="col-6">End Time: {{ workout.end_time }}</div>
+        <div class="col-6">
+          <div>Start Time:</div>
+          <div>
+            {{ dayjs(workout.start_time).format("h:mm A") }}
+          </div>
+        </div>
+        <div class="col-6">
+          <div>End Time:</div>
+          <div>
+            {{
+              workout.end_time ? dayjs(workout.end_time).format("h:mm A") : ""
+            }}
+          </div>
+        </div>
       </div>
     </BorderedBox>
     <div class="column px-4 py-2 gap-y-2 content-center">
@@ -93,6 +105,7 @@
 import type { QForm } from "quasar";
 import BorderedBox from "~/components/BorderedBox.vue";
 import RepCounter from "~/components/RepCounter.vue";
+import dayjs from "dayjs";
 
 const newexercise = ref<{ name: string; weight: number }>({
   name: "",
