@@ -38,9 +38,11 @@
     <div class="column px-4 py-2 gap-y-2 content-center">
       <div v-for="exercise in workout.exercises" :key="exercise.id">
         <div
-          class="row border-primary border-2 rounded-lg justify-between mx-4"
+          class="row border-primary border-2 rounded-lg justify-between items-center q-pl-md"
         >
-          <div>{{ exercise.name }}: {{ exercise.weight }} lb</div>
+          <div>
+            {{ exercise.name }}: {{ exercise.weight }} lb
+          </div>
           <div>
             <q-btn
               class="col-1"
@@ -52,7 +54,7 @@
             />
           </div>
         </div>
-        <div class="row q-gutter-x-md pl-8">
+        <div class="row q-gutter-x-md">
           <RepCounter v-for="set in exercise.sets" :key="set.id" :set="set" />
           <q-btn
             icon="add"
@@ -109,7 +111,7 @@ import dayjs from "dayjs";
 
 const newexercise = ref<{ name: string; weight: number }>({
   name: "",
-  weight: 0,
+  weight: 10,
 });
 const exerciseForm = ref<QForm>();
 

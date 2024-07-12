@@ -19,7 +19,16 @@
       dense
       @click="handleDecreaseReps"
     />
-    <div>{{ set.weight }} lb</div>
+    <q-input
+      v-model="set.weight"
+      suffix="lb"
+      type="number"
+      step="1"
+      dark
+      dense
+      input-class="text-right"
+      @blur="handleSetWeight(set.weight)"
+    />
   </div>
 </template>
 
@@ -75,5 +84,21 @@ const deleteSet = async () => {
     return;
   }
   props.set.reps = 0;
+};
+
+const handleSetWeight = async (weight: number) => {
+  const body = { weight };
+  const { data, error } = await useFetch(
+    `/api/fitnessTracker/set/${props.set.id}/weight`,
+    {
+      method: "patch",
+      body,
+    }
+  );
+  if (error && error.value) {
+    fail(error.value.data.message);
+    return;
+  }
+  props.set.weight = data.value.weight;
 };
 </script>
