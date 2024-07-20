@@ -35,15 +35,17 @@ export default eventHandler(async (event) => {
   throwErrorIfExists(setError);
 
   let reps = 10;
+  let weight = exercise.weight;
   if (!!sets && sets.length > 0) {
     const lastSet = sets.at(-1);
     if (!!lastSet && !!lastSet.reps) {
       reps = lastSet.reps;
+      weight = lastSet.weight;
     }
   }
   const { data, error } = await supabase
     .from("FT_SETS")
-    .insert([{ weight: exercise.weight, reps, exercise: exerciseId }])
+    .insert([{ weight: weight, reps, exercise: exerciseId }])
     .select()
     .single();
 
