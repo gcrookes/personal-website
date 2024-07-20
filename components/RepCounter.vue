@@ -8,7 +8,7 @@
       dense
       @click="handleIncreaseReps"
     />
-    <div class="border border-white w-min px-3 py-1 rounded-lg text-3xl">
+    <div class="border border-white w-min py-1 rounded-lg text-3xl text-center w-10">
       {{ set.reps }}
     </div>
     <q-btn
