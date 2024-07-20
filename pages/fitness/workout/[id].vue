@@ -40,9 +40,7 @@
         <div
           class="row border-primary border-2 rounded-lg justify-between items-center q-pl-md"
         >
-          <div>
-            {{ exercise.name }}: {{ exercise.weight }} lb
-          </div>
+          <div>{{ exercise.name }}: {{ exercise.weight }} lb</div>
           <div>
             <q-btn
               class="col-1"
@@ -50,7 +48,7 @@
               color="red"
               flat
               dense
-              @click.stop="deleteexercise(exercise.id)"
+              @click.stop="handleDeleteExercise(exercise.id)"
             />
           </div>
         </div>
@@ -108,6 +106,7 @@ import type { QForm } from "quasar";
 import BorderedBox from "~/components/BorderedBox.vue";
 import RepCounter from "~/components/RepCounter.vue";
 import dayjs from "dayjs";
+import { fail, confirm } from "~/utils/notify";
 
 const newexercise = ref<{ name: string; weight: number }>({
   name: "",
@@ -141,7 +140,17 @@ const addExercise = async () => {
   exerciseForm.value?.reset();
 };
 
-const deleteexercise = async (exerciseId: string) => {
+const handleDeleteExercise = async (workoutId: string) => {
+  confirm({
+    okHandler: async () => {
+      await deleteExercise(workoutId);
+    },
+    title: "Confirm Delete Excercise",
+    message: "Are you sure you want to to delete this excercise?",
+  });
+};
+
+const deleteExercise = async (exerciseId: string) => {
   const { error } = await useFetch(
     `/api/fitnessTracker/workouts/${routeWorkoutId.value}/exercise/${exerciseId}`,
     {

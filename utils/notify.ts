@@ -18,3 +18,36 @@ export const fail = (i18nMessage?: string, timeout = 10000) => {
     html: true,
   })
 }
+
+export interface IConfirmOptions {
+  title?: string
+  message?: string
+  cancel?: boolean
+  persistent?: boolean
+  okHandler?: () => void
+  cancelHandler?: () => void
+}
+
+export const confirm = (options: IConfirmOptions) => {
+  const {
+    title,
+    message,
+    okHandler,
+    cancelHandler,
+    cancel = true,
+    persistent = false,
+  } = options
+  Dialog.create({
+    title: title || 'Alert',
+    message: message || '',
+    cancel: cancel,
+    persistent,
+    html: true,
+  })
+    .onOk(() => {
+      okHandler && okHandler()
+    })
+    .onCancel(() => {
+      cancelHandler && cancelHandler()
+    })
+}

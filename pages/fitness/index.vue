@@ -17,7 +17,7 @@
         :workout="workout"
         :key="workout.id"
         active
-        @delete="deleteWorkout"
+        @delete="handleDeleteWorkout"
       />
     </BorderedBox>
     <BorderedBox title="Past Workouts">
@@ -25,7 +25,7 @@
         v-for="workout in data"
         :workout="workout"
         :key="workout.id"
-        @delete="deleteWorkout"
+        @delete="handleDeleteWorkout"
       />
     </BorderedBox>
   </div>
@@ -33,6 +33,7 @@
 
 <script setup lang="ts">
 import WorkoutSummary from "~/components/FitnessTracker/WorkoutSummary.vue";
+import { fail, confirm } from "~/utils/notify";
 
 const { data: workoutTypes } = await useFetch(
   "/api/fitnessTracker/workoutTypes"
@@ -53,6 +54,17 @@ const startWorkout = async (type: string) => {
   }
   if (!!workout.value) await navigateTo("/fitness/workout/" + workout.value.id);
 };
+
+const handleDeleteWorkout = async (workoutId: string) => {
+  confirm({
+    okHandler: async () => {
+      await deleteWorkout(workoutId);
+    },
+    title: "Confirm Delete Workout",
+    message: "Are you sure you want to to delete this workout?",
+  });
+};
+
 const deleteWorkout = async (workoutId: string) => {
   const { error } = await useFetch(
     `/api/fitnessTracker/workouts/${workoutId}`,
