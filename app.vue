@@ -11,7 +11,7 @@
             <q-route-tab class="rounded-lg" to="/about" name="about" label="About" />
             <q-route-tab class="rounded-lg" to="/projects" name="projects" label="Projects" />
             <q-route-tab class="rounded-lg" to="/contact" name="contact" label="Contact" />
-            <q-route-tab v-if="route.path.startsWith('/fitness')" class="rounded-lg" to="/fitness" name="Fitness" label="Fitness" />
+            <q-route-tab class="rounded-lg" to="/login" name="login" label="Login" />
           </q-tabs>
           <q-btn v-else flat round dense icon="menu">
             <q-menu
@@ -42,6 +42,12 @@
                   :class="[route.path !== '/contact' ? '' : 'underline']"
                   >
                     <NuxtLink to="/contact" class="flex font-bold h-full w-full text-center items-center">Contact</NuxtLink>
+                </q-item>
+                <q-item
+                  clickable
+                  :class="[route.path !== '/contact' ? '' : 'underline']"
+                  >
+                    <NuxtLink to="/login" class="flex font-bold h-full w-full text-center items-center">Login</NuxtLink>
                 </q-item>
               </q-list>
             </q-menu>

@@ -15,6 +15,7 @@ export type Database = {
           id: string
           name: string
           soft_delete: boolean | null
+          user_id: string | null
           weight: number | null
           workout: string | null
         }
@@ -23,6 +24,7 @@ export type Database = {
           id?: string
           name?: string
           soft_delete?: boolean | null
+          user_id?: string | null
           weight?: number | null
           workout?: string | null
         }
@@ -31,6 +33,7 @@ export type Database = {
           id?: string
           name?: string
           soft_delete?: boolean | null
+          user_id?: string | null
           weight?: number | null
           workout?: string | null
         }
@@ -44,24 +47,65 @@ export type Database = {
           },
         ]
       }
+      FT_SETS: {
+        Row: {
+          created_at: string
+          exercise: string | null
+          id: string
+          reps: number | null
+          soft_delete: boolean | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          exercise?: string | null
+          id?: string
+          reps?: number | null
+          soft_delete?: boolean | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          exercise?: string | null
+          id?: string
+          reps?: number | null
+          soft_delete?: boolean | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "FT_SETS_exercise_fkey"
+            columns: ["exercise"]
+            isOneToOne: false
+            referencedRelation: "FT_EXERCISES"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       FT_WORKOUT_TYPES: {
         Row: {
           created_at: string
           id: string
           name: string | null
           soft_delete: boolean | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           name?: string | null
           soft_delete?: boolean | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           name?: string | null
           soft_delete?: boolean | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -73,6 +117,7 @@ export type Database = {
           soft_delete: boolean
           start_time: string
           type: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -81,6 +126,7 @@ export type Database = {
           soft_delete?: boolean
           start_time?: string
           type?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -89,6 +135,7 @@ export type Database = {
           soft_delete?: boolean
           start_time?: string
           type?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {

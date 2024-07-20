@@ -1,4 +1,7 @@
-import { serverSupabaseServiceRole } from "#supabase/server";
+import {
+  serverSupabaseServiceRole,
+  serverSupabaseUser,
+} from "#supabase/server";
 import {
   getParamThrowIfEmpty,
   throwErrorIfExists,
@@ -10,11 +13,14 @@ export default eventHandler(async (event) => {
   const body = await readBody(event);
 
   const supabase = serverSupabaseServiceRole<Database>(event);
+  const user = await serverSupabaseUser(event);
+  const userId = user?.id ?? "";
 
   const { data: exercise, error: exerciseError } = await supabase
     .from("FT_EXERCISES")
     .select("id, name, weight")
     .eq("id", exerciseId)
+    .eq("user_id", userId)
     .eq("soft_delete", false)
     .single();
   throwErrorIfExists(exerciseError);
@@ -31,6 +37,7 @@ export default eventHandler(async (event) => {
     .select("id, weight, reps, exercise")
     .eq("exercise", exerciseId)
     .eq("soft_delete", false)
+    .eq("user_id", userId)
     .order("created_at");
   throwErrorIfExists(setError);
 
@@ -45,7 +52,7 @@ export default eventHandler(async (event) => {
   }
   const { data, error } = await supabase
     .from("FT_SETS")
-    .insert([{ weight: weight, reps, exercise: exerciseId }])
+    .insert([{ weight: weight, reps, exercise: exerciseId, user_id: userId }])
     .select()
     .single();
 

@@ -1,4 +1,7 @@
-import { serverSupabaseServiceRole } from "#supabase/server";
+import {
+  serverSupabaseServiceRole,
+  serverSupabaseUser,
+} from "#supabase/server";
 import {
   getParamThrowIfEmpty,
   throwErrorIfExists,
@@ -8,6 +11,8 @@ import { Database } from "~/types/supabase";
 export default eventHandler(async (event) => {
   const setId = getParamThrowIfEmpty(event, "setId");
   const body = await readBody(event);
+  const user = await serverSupabaseUser(event);
+  const userId = user?.id ?? "";
 
   const supabase = serverSupabaseServiceRole<Database>(event);
 
@@ -15,6 +20,7 @@ export default eventHandler(async (event) => {
     .from("FT_SETS")
     .update({ weight: body.weight })
     .eq("id", setId)
+    .eq("user_id", userId)
     .eq("soft_delete", false)
     .select()
     .single();

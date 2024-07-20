@@ -1,4 +1,7 @@
-import { serverSupabaseServiceRole } from "#supabase/server";
+import {
+  serverSupabaseServiceRole,
+  serverSupabaseUser,
+} from "#supabase/server";
 import { Database } from "~/types/supabase";
 
 export default eventHandler(async (event) => {
@@ -11,6 +14,8 @@ export default eventHandler(async (event) => {
   }
 
   const supabase = serverSupabaseServiceRole<Database>(event);
+  const user = await serverSupabaseUser(event);
+  const userId = user?.id ?? "";
 
   const { data: typeResult } = await supabase
     .from("FT_WORKOUT_TYPES")
@@ -27,7 +32,7 @@ export default eventHandler(async (event) => {
 
   const { data, error } = await supabase
     .from("FT_WORKOUTS")
-    .insert([{ type }])
+    .insert([{ type, user_id: userId }])
     .select()
     .single();
 

@@ -1,5 +1,5 @@
 import { serverSupabaseServiceRole } from "#supabase/server";
-import { stringifyQuery } from "vue-router";
+import { serverSupabaseUser } from "#supabase/server";
 import {
   getParamThrowIfEmpty,
   throwErrorIfExists,
@@ -9,11 +9,15 @@ import { Database } from "~/types/supabase";
 export default eventHandler(async (event) => {
   const id = getParamThrowIfEmpty(event, "workoutId");
   const supabase = serverSupabaseServiceRole<Database>(event);
+  const user = await serverSupabaseUser(event);
+  const userId = user?.id ?? "";
+
   const { data, error } = await supabase
     .from("FT_WORKOUTS")
     .select("*, type (id, name)")
     .eq("id", id)
     .eq("soft_delete", false)
+    .eq("user_id", userId)
     .single();
   throwErrorIfExists(error);
 
@@ -22,6 +26,7 @@ export default eventHandler(async (event) => {
     .select("id, name, weight")
     .eq("workout", id)
     .eq("soft_delete", false)
+    .eq("user_id", userId)
     .order("created_at");
   throwErrorIfExists(exerciseError);
 
@@ -39,6 +44,7 @@ export default eventHandler(async (event) => {
       .select("id, weight, reps, exercise")
       .in("exercise", exerciseIds)
       .eq("soft_delete", false)
+      .eq("user_id", userId)
       .order("created_at");
 
     throwErrorIfExists(setError);
