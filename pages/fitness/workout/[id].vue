@@ -38,7 +38,7 @@
     <div class="column px-4 py-2 gap-y-2 content-center">
       <div v-for="exercise in workout.exercises" :key="exercise.id">
         <div
-          class="row border-primary border-2 rounded-lg justify-between items-center q-pl-md"
+          class="bg-zinc-900/75 row border-primary border-2 rounded-lg justify-between items-center q-pl-md"
         >
           <div>{{ exercise.name }}: {{ exercise.weight }} lb</div>
           <div>
