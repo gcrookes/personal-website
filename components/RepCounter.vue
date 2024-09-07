@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!deleted" class="column content-center w-min">
+  <div v-if="!deleted" class="column">
     <q-btn
       icon="keyboard_arrow_up"
       class="text-white"
@@ -8,7 +8,9 @@
       dense
       @click="handleIncreaseReps"
     />
-    <div class="border border-white w-min py-1 rounded-lg text-3xl text-center w-10">
+    <div
+      class="border border-white py-1 rounded-lg text-3xl text-center w-10 q-mx-auto"
+    >
       {{ set.reps }}
     </div>
     <q-btn
@@ -22,6 +24,7 @@
     <q-input
       v-model="set.weight"
       suffix="lb"
+      class="w-14"
       type="number"
       step="1"
       dark
