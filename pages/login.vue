@@ -56,8 +56,8 @@ import { ref } from "vue";
 import { fail } from "~/utils/notify";
 
 const supabase = useSupabaseClient();
-const email = ref("");
-const password = ref("");
+const email = ref("testuser@garnetcrookes.ca");
+const password = ref("password");
 const hidePassword = ref(true);
 
 const signIn = async () => {
