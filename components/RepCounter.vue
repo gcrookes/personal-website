@@ -21,6 +21,7 @@
       :color="set.reps <= 1 ? 'red' : 'white'"
       flat
       dense
+      :disable="isDeleting"
       @click="handleDecreaseReps"
     />
     <div class="row">
@@ -61,7 +62,6 @@
 </template>
 
 <script setup lang="ts">
-import type { RefSymbol } from "@vue/reactivity";
 import { fail, confirm } from "~/utils/notify";
 interface ISet {
   id: string;
@@ -77,6 +77,7 @@ const props = defineProps({
 const originalReps = ref(props.set.reps);
 const isPanning = ref(false);
 const deleted = ref(false);
+const isDeleting = ref(false);
 
 const handleIncreaseReps = async () => {
   setReps(props.set.reps + 1);
@@ -88,10 +89,16 @@ const handleDecreaseReps = () => {
 };
 
 const handleDeleteSet = () => {
+  if (isDeleting.value) return;
+  isDeleting.value = true;
   confirm({
     okHandler: async () => {
       deleted.value = true;
       await deleteSet();
+      isDeleting.value = false;
+    },
+    cancelHandler: () => {
+      isDeleting.value = false;
     },
     title: "Confirm Delete Set",
     message: "Are you sure you want to to delete this set?",
