@@ -14,6 +14,7 @@
       {{ set.reps }}
     </div>
     <q-btn
+      v-touch-hold:1000.mouse="handleDeleteSet"
       :icon="set.reps === 1 ? 'close' : 'keyboard_arrow_down'"
       class="text-white"
       :color="set.reps === 1 ? 'red' : 'white'"
@@ -43,7 +44,6 @@
         >
           lb
         </q-chip>
-
         <q-chip
           dense
           size="sm"
@@ -60,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import { fail, confirm } from "~/utils/notify";
 interface ISet {
   id: string;
   weight: number;
@@ -79,12 +80,22 @@ const handleIncreaseReps = async () => {
 
 const handleDecreaseReps = () => {
   if (props.set.reps === 1) {
-    deleted.value = true;
-    deleteSet();
+    handleDeleteSet();
     return;
   }
   if (props.set.reps <= 1) return;
   setReps(props.set.reps - 1);
+};
+
+const handleDeleteSet = () => {
+  confirm({
+    okHandler: async () => {
+      deleted.value = true;
+      await deleteSet();
+    },
+    title: "Confirm Delete Set",
+    message: "Are you sure you want to to delete this set?",
+  });
 };
 
 const setReps = async (newReps: number) => {
