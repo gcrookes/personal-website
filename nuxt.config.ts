@@ -2,11 +2,13 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['@/assets/custom.scss', '~/assets/css/main.css'],
+
   modules: [
       'nuxt-quasar-ui',
       'nuxt-particles',
       '@nuxtjs/supabase',
   ],
+
   quasar: {
     sassVariables: '@/assets/quasar.variables.sass',
     plugins: [
@@ -28,14 +30,17 @@ export default defineNuxtConfig({
       },
     },
   },
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
   supabase: {
     redirect: false,
   },
-});
 
+  compatibilityDate: '2024-11-12',
+});

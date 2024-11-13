@@ -35,7 +35,7 @@
         </div>
       </div>
     </BorderedBox>
-    <div class="column px-4 py-2 gap-y-2 content-center">
+    <div class="column py-2 gap-y-2 content-center">
       <div v-for="exercise in workout.exercises" :key="exercise.id">
         <div
           class="bg-zinc-900/75 row border-primary border-2 rounded-lg justify-between items-center q-pl-md"
@@ -52,7 +52,7 @@
             />
           </div>
         </div>
-        <div class="row q-gutter-x-md">
+        <div class="row q-gutter-x-sm">
           <RepCounter v-for="set in exercise.sets" :key="set.id" :set="set" />
           <q-btn
             icon="add"

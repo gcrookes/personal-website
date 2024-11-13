@@ -41,7 +41,7 @@ export default eventHandler(async (event) => {
     var exerciseIds = exercises?.map((exercise) => exercise.id);
     const { data: sets, error: setError } = await supabase
       .from("FT_SETS")
-      .select("id, weight, reps, exercise")
+      .select("id, weight, reps, exercise, unit")
       .in("exercise", exerciseIds)
       .eq("soft_delete", false)
       .eq("user_id", userId)

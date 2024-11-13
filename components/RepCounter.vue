@@ -21,17 +21,40 @@
       dense
       @click="handleDecreaseReps"
     />
-    <q-input
-      v-model="set.weight"
-      suffix="lb"
-      class="w-14"
-      type="number"
-      step="1"
-      dark
-      dense
-      input-class="text-right"
-      @blur="handleSetWeight(set.weight)"
-    />
+    <div class="row">
+      <q-input
+        v-model.number="set.weight"
+        class="w-10"
+        dark
+        dense
+        input-class="text-center"
+        mask="####"
+        @blur="handleSetWeight(set.weight)"
+      />
+      <div class="column">
+        <q-chip
+          dense
+          size="sm"
+          :color="set.unit === 'LB' ? 'primary' : ''"
+          input-class="text-center"
+          clickable
+          @click="handleSetUnit('LB')"
+        >
+          lb
+        </q-chip>
+
+        <q-chip
+          dense
+          size="sm"
+          :color="set.unit === 'KG' ? 'primary' : ''"
+          input-class="text-center"
+          clickable
+          @click="handleSetUnit('KG')"
+        >
+          kg
+        </q-chip>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -40,6 +63,7 @@ interface ISet {
   id: string;
   weight: number;
   reps: number;
+  unit: string;
 }
 
 const deleted = ref(false);
@@ -64,6 +88,7 @@ const handleDecreaseReps = () => {
 
 const setReps = async (newReps: number) => {
   const body = { reps: newReps };
+  props.set.reps = newReps;
   const { data, error } = await useFetch(
     `/api/fitnessTracker/set/${props.set.id}/reps`,
     {
@@ -75,7 +100,7 @@ const setReps = async (newReps: number) => {
     fail(error.value.data.message);
     return;
   }
-  props.set.reps = data.value.reps;
+  props.set.reps = data.value?.reps || 0;
 };
 
 const deleteSet = async () => {
@@ -90,6 +115,11 @@ const deleteSet = async () => {
 };
 
 const handleSetWeight = async (weight: number) => {
+  if (weight <= 0) {
+    fail("Must be a positive integer");
+    props.set.weight = 0;
+    return;
+  }
   const body = { weight };
   const { data, error } = await useFetch(
     `/api/fitnessTracker/set/${props.set.id}/weight`,
@@ -102,6 +132,29 @@ const handleSetWeight = async (weight: number) => {
     fail(error.value.data.message);
     return;
   }
-  props.set.weight = data.value.weight;
+  props.set.weight = data.value?.weight || 0;
+};
+
+const handleSetUnit = async (unit: string) => {
+  const body = { unit: unit };
+  const originalUnit = props.set.unit;
+  const originalWeight = props.set.weight;
+  props.set.unit = unit;
+  props.set.weight = convertWeight(originalWeight, originalUnit, unit);
+
+  await $fetch(`/api/fitnessTracker/set/${props.set.id}/unit`, {
+    method: "patch",
+    body,
+  })
+    .then((res) => {
+      console.log(res);
+      props.set.unit = res?.unit!;
+      props.set.weight = res?.weight!;
+    })
+    .catch((ex) => {
+      fail(ex.data.message);
+      props.set.unit = originalUnit;
+      props.set.weight = originalWeight;
+    });
 };
 </script>
