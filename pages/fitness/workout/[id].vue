@@ -79,13 +79,14 @@
           :rules.lazy="[(val) => !!val || 'Required']"
         />
         <q-input
-          v-model="newexercise.weight"
-          type="number"
+          v-model.number="newexercise.weight"
+          type="tel"
           label="Weight"
           class="col-3"
           dense
           outlined
           dark
+          mask="####"
           :rules.lazy="[(val) => !!val || val > 0 || 'Must be greater than 0']"
         />
         <q-btn

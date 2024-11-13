@@ -25,6 +25,7 @@
       <q-input
         v-model.number="set.weight"
         class="w-10"
+        type="tel"
         dark
         dense
         input-class="text-center"
