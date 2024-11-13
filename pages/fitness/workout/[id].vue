@@ -52,16 +52,18 @@
             />
           </div>
         </div>
-        <div class="row q-gutter-x-sm">
+        <div class="row q-gutter-x-sm justify-center">
           <RepCounter v-for="set in exercise.sets" :key="set.id" :set="set" />
-          <q-btn
-            icon="add"
-            class="text-white px-1 mb-auto mt-10 ml-4"
-            color="white"
-            outline
-            rounded
-            @click="handleAddSet(exercise.id)"
-          />
+          <div class="mb-auto pt-10 pb-4 ml-4">
+            <q-btn
+              icon="add"
+              class="text-white px-1"
+              color="white"
+              outline
+              rounded
+              @click="handleAddSet(exercise.id)"
+            />
+          </div>
         </div>
       </div>
       <q-form

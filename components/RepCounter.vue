@@ -163,7 +163,6 @@ const handleSetUnit = async (unit: string) => {
     body,
   })
     .then((res) => {
-      console.log(res);
       props.set.unit = res?.unit!;
       props.set.weight = res?.weight!;
     })
