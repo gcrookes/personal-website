@@ -9,15 +9,16 @@
       @click="handleIncreaseReps"
     />
     <div
+      v-touch-pan.vertical.prevent.mouse="handlePanSets"
       class="border border-white py-1 rounded-lg text-3xl text-center w-10 q-mx-auto"
     >
       {{ set.reps }}
     </div>
     <q-btn
       v-touch-hold:1000.mouse="handleDeleteSet"
-      :icon="set.reps === 1 ? 'close' : 'keyboard_arrow_down'"
+      :icon="set.reps <= 1 ? 'close' : 'keyboard_arrow_down'"
       class="text-white"
-      :color="set.reps === 1 ? 'red' : 'white'"
+      :color="set.reps <= 1 ? 'red' : 'white'"
       flat
       dense
       @click="handleDecreaseReps"
@@ -60,6 +61,7 @@
 </template>
 
 <script setup lang="ts">
+import type { RefSymbol } from "@vue/reactivity";
 import { fail, confirm } from "~/utils/notify";
 interface ISet {
   id: string;
@@ -68,22 +70,20 @@ interface ISet {
   unit: string;
 }
 
-const deleted = ref(false);
-
 const props = defineProps({
   set: { type: Object as PropType<ISet>, default: () => {} },
 });
+
+const originalReps = ref(props.set.reps);
+const isPanning = ref(false);
+const deleted = ref(false);
 
 const handleIncreaseReps = async () => {
   setReps(props.set.reps + 1);
 };
 
 const handleDecreaseReps = () => {
-  if (props.set.reps === 1) {
-    handleDeleteSet();
-    return;
-  }
-  if (props.set.reps <= 1) return;
+  if (props.set.reps < 0) return;
   setReps(props.set.reps - 1);
 };
 
@@ -99,6 +99,10 @@ const handleDeleteSet = () => {
 };
 
 const setReps = async (newReps: number) => {
+  if (newReps === 0) {
+    handleDeleteSet();
+    return;
+  }
   const body = { reps: newReps };
   props.set.reps = newReps;
   const { data, error } = await useFetch(
@@ -168,5 +172,29 @@ const handleSetUnit = async (unit: string) => {
       props.set.unit = originalUnit;
       props.set.weight = originalWeight;
     });
+};
+
+const handlePanSets = (event: any) => {
+  if (!event) {
+    props.set.reps = originalReps.value;
+    isPanning.value = false;
+    return;
+  }
+  if (event.isFirst) {
+    originalReps.value = props.set.reps;
+    isPanning.value = true;
+  }
+  if (event.isFinal) {
+    setReps(props.set.reps);
+    isPanning.value = false;
+    return;
+  }
+  const reps = originalReps.value;
+  const diff = Math.floor(event.distance.y / 15);
+  if (event.direction === "up") {
+    props.set.reps = reps + diff;
+  } else {
+    props.set.reps = Math.max(reps - diff, 0);
+  }
 };
 </script>
